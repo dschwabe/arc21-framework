@@ -64,7 +64,8 @@ arc21-site/
 
 | Document | Purpose |
 |---|---|
-| [docs/getting-started.md](docs/getting-started.md) | Tutorial: serve locally, load data, navigate |
+| [docs/developer-guide.md](docs/developer-guide.md) | Full guide: tutorials, how-to, reference, explanation (Diátaxis) |
+| [docs/getting-started.md](docs/getting-started.md) | Quick-start: serve locally, load data, navigate |
 | [docs/spreadsheet-format.md](docs/spreadsheet-format.md) | Reference: all XLSX tabs and columns |
 | [docs/asset-discovery.md](docs/asset-discovery.md) | Reference: how images are found from the filesystem |
 | [docs/skin-system.md](docs/skin-system.md) | Reference + guide: skin architecture, building a new skin |
