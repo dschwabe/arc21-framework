@@ -121,7 +121,9 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       description: get(row, ["description", "Description", "descrição", "descricao"]),
       sourceUrl: get(row, ["sourceUrl", "souceUrl", "url", "postUrl"]),
       imagePath: get(row, ["imagePath", "ImagePath", "snapshot", "screenshot"]),
-      sourceTitle: get(row, ["sourceTitle", "SourceTitle", "postTitle", "source"])
+      sourceTitle: get(row, ["sourceTitle", "SourceTitle", "postTitle", "source"]),
+      level: get(row, ["level", "Level"]),
+      camada: get(row, ["camada", "Camada"])
     };
     conceptOrder.push(id);
   });
@@ -153,7 +155,8 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       relationTypeDescription: relationTypeInfo ? relationTypeInfo.description : "",
       relationName: relationName || relationTypeID,
       explanation: get(row, ["explanation", "Explanation", "explicação", "explicacao"]),
-      sourceUrl: source.sourceUrl, imagePath: source.imagePath, sourceTitle: source.sourceTitle
+      sourceUrl: source.sourceUrl, imagePath: source.imagePath, sourceTitle: source.sourceTitle,
+      level: source.level, camada: source.camada
     });
   });
   conceptOrder.forEach(function (id) {
@@ -163,7 +166,8 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       conceptID: c.id, ConceptLabel: c.label, concept: c.label, description: c.description,
       relatedConceptID: "", relatedConcept: "", relationTypeID: "", relationCategory: "",
       relationTypeDescription: "", relationName: "", explanation: "",
-      sourceUrl: c.sourceUrl, imagePath: c.imagePath, sourceTitle: c.sourceTitle
+      sourceUrl: c.sourceUrl, imagePath: c.imagePath, sourceTitle: c.sourceTitle,
+      level: c.level, camada: c.camada
     });
   });
   outputRows._sourceFormat = relationHasTypeId ? "xlsx-relation-types" : "xlsx";
