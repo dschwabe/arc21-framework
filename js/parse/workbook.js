@@ -223,6 +223,7 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
   return {
     rows: outputRows,
     narratives: narratives,
+    siteConfig: parseSiteSheet(sheetInfo),
     media: parseMediaSheet(sheetInfo),
     templates: parseTemplatesSheet(sheetInfo),
     narrativeSkins: parseNarrativeSkinsSheet(sheetInfo),
@@ -235,6 +236,18 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
 }
 
 // ---- Sheet-level parsers ----
+export function parseSiteSheet(sheetInfo) {
+  const info = getSheetInfoByName(sheetInfo, "Site");
+  if (!info) return {};
+  const out = {};
+  info.rows.forEach(function (row) {
+    const key = String(get(row, ["key", "Key"]) || "").trim();
+    const val = String(get(row, ["value", "Value"]) || "").trim();
+    if (key) out[key] = val;
+  });
+  return out;
+}
+
 export function parseTemplatesSheet(sheetInfo) {
   const info = getSheetInfoByName(sheetInfo, "Templates");
   if (!info || !hasColumns(info.rows, ["templateID"])) return {};

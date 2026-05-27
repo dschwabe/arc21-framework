@@ -2,7 +2,7 @@
 import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=6";
 import { parseCSV } from "./js/parse/csv.js?v=6";
 import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=6";
-import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=7";
+import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=8";
 import { buildGraph, countRelations } from "./js/graph/builder.js?v=7";
 import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=6";
 import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=6";
@@ -323,6 +323,9 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       const index = await loadSkinIndex();
       const skinContracts = (index && index.skins || []).map(function (s) { return s.dataContract; }).filter(Boolean);
       const result = await parseCombinedWorkbook(arrayBuffer, { skinContracts: skinContracts });
+      if (result.siteConfig && Object.keys(result.siteConfig).length) {
+        try { localStorage.setItem('conceptGraph.siteConfig.v1', JSON.stringify(result.siteConfig)); } catch (e) {}
+      }
       await ingestRows(result.rows, label, "xlsx", result.narratives, result.media || {}, { templates: result.templates || {}, narrativeSkins: result.narrativeSkins || {}, conceptSkins: result.conceptSkins || {}, conceptTexts: result.conceptTexts || {}, skinData: result.skinData || {} });
     }
 
@@ -1786,6 +1789,9 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       appStore.graph = buildGraph(result.rows);
       saveStoredGraph(appStore.graph, lsk.data);
       try { localStorage.setItem(STORAGE_SOURCE_LABEL_KEY, usedPath); } catch (e) {}
+      if (result.siteConfig && Object.keys(result.siteConfig).length) {
+        try { localStorage.setItem('conceptGraph.siteConfig.v1', JSON.stringify(result.siteConfig)); } catch (e) {}
+      }
       saveStoredMedia(result.media || {}, lsk.media);
       saveStoredTemplates(result.templates || {}, lsk.templates);
       saveStoredNarrativeSkins(result.narrativeSkins || {}, lsk.skins);
