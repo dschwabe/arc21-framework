@@ -613,11 +613,18 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     }
     const root = appStore.graph.bySlug[rootSlug];
 
-    // Collect "aspecto"-type relations from the root concept.
+    // Collect hero diagram relations from the root concept.
+    // If help-config.json defines "hero.diagram.relationTypeID", filter by that ID.
+    // Otherwise fall back to matching "aspecto" in the relation name (default for V6).
+    const heroDiagramTypeID = appStore.helpConfig && appStore.helpConfig['hero.diagram.relationTypeID']
+      ? String(appStore.helpConfig['hero.diagram.relationTypeID']).trim()
+      : null;
     const seen = {};
     const items = (root.relations || []).filter(function (rel) {
-      const name = String(rel.relationName || "").toLowerCase();
-      if (!/aspe[ct]/.test(name)) return false;
+      const pass = heroDiagramTypeID
+        ? rel.relationTypeID === heroDiagramTypeID
+        : /aspe[ct]/i.test(String(rel.relationName || ""));
+      if (!pass) return false;
       if (seen[rel.targetSlug]) return false;
       seen[rel.targetSlug] = true;
       return true;
@@ -631,7 +638,8 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     });
 
     if (!items.length) {
-      container.innerHTML = '<p class="hero-diagram-empty">Nenhuma rela\u00e7\u00e3o do tipo \u201caspecto\u201d encontrada a partir de <strong>' + escapeHTML(root.concept) + '</strong>.</p>';
+      const typeLabel = heroDiagramTypeID || 'aspecto';
+      container.innerHTML = '<p class="hero-diagram-empty">Nenhuma rela\u00e7\u00e3o do tipo \u201c' + escapeHTML(typeLabel) + '\u201d encontrada a partir de <strong>' + escapeHTML(root.concept) + '</strong>.</p>';
       return;
     }
 
