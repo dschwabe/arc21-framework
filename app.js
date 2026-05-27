@@ -604,13 +604,35 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     if (!container) return;
 
     if (!appStore.graph || !appStore.graph.bySlug || !appStore.graph.order || !appStore.graph.order.length) {
-      container.innerHTML = '<p class="hero-diagram-empty">Carregue o grafo para ver o diagrama de alto n\u00edvel.</p>';
+      container.innerHTML = '<p class="hero-diagram-empty">Carregue o grafo para ver o diagrama de alto nível.</p>';
       return;
     }
 
+    // Read siteConfig from localStorage (site-specific; empty object for sites that don't use it).
+    var siteConfig = {};
+    try {
+      var _raw = localStorage.getItem('conceptGraph.siteConfig.v1');
+      if (_raw) siteConfig = JSON.parse(_raw);
+    } catch (e) {}
+
+    // Try a site-owned renderer at ./js/diagram/hero.js.
+    // Sites that need a custom diagram provide this file; absent sites get a
+    // 404 which the catch handler converts into the built-in generic renderer.
+    import('./js/diagram/hero.js').then(function (mod) {
+      if (typeof mod.render === 'function') {
+        mod.render(container, appStore.graph, siteConfig);
+      } else {
+        _renderBuiltinHeroDiagram(container);
+      }
+    }).catch(function () {
+      _renderBuiltinHeroDiagram(container);
+    });
+  }
+
+  function _renderBuiltinHeroDiagram(container) {
     const rootSlug = canonicalRootSlug();
     if (!rootSlug || !appStore.graph.bySlug[rootSlug]) {
-      container.innerHTML = '<p class="hero-diagram-empty">N\u00e3o encontrei o conceito raiz para o diagrama.</p>';
+      container.innerHTML = '<p class="hero-diagram-empty">Não encontrei o conceito raiz para o diagrama.</p>';
       return;
     }
     const root = appStore.graph.bySlug[rootSlug];
@@ -641,14 +663,12 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
 
     if (!items.length) {
       const typeLabel = heroDiagramTypeID || 'aspecto';
-      container.innerHTML = '<p class="hero-diagram-empty">Nenhuma rela\u00e7\u00e3o do tipo \u201c' + escapeHTML(typeLabel) + '\u201d encontrada a partir de <strong>' + escapeHTML(root.concept) + '</strong>.</p>';
+      container.innerHTML = '<p class="hero-diagram-empty">Nenhuma relação do tipo “' + escapeHTML(typeLabel) + '” encontrada a partir de <strong>' + escapeHTML(root.concept) + '</strong>.</p>';
       return;
     }
 
     // Layout: radial — center node + items distributed evenly around a circle.
     // Even-indexed items sit on an inner ring (r=490), odd on an outer ring (r=670).
-    // This stagger guarantees no box overlap for N≤12: all adjacent pairs satisfy
-    // |Δx|>childW OR |Δy|>childH (verified analytically).
     const W = 1700, H = 1600;
     const cx = W / 2, cy = H / 2;
     const R_INNER = 490, R_OUTER = 670;
@@ -661,7 +681,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r, ang: ang, r: r };
     }
 
-    // Build SVG
+    // Build SVG — uses CSS custom properties so site.css palettes apply to accent colours.
     const parts = [];
     parts.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" class="hero-diagram-svg" preserveAspectRatio="xMidYMid meet">');
     parts.push('<defs>');
@@ -673,47 +693,46 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     parts.push('<rect width="' + W + '" height="' + H + '" fill="url(#hd-grid)" opacity="0.5"/>');
 
     // Decorative concentric guides
-    parts.push('<g fill="none" stroke="#1c2638" stroke-dasharray="2 4" opacity="0.6">');
+    parts.push('<g fill="none" stroke="var(--line-strong)" stroke-dasharray="2 4" opacity="0.6">');
     parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + (R_INNER - 20) + '"/>');
     parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + (R_OUTER + 20) + '"/>');
     parts.push('</g>');
 
     // Connection lines (drawn first, behind nodes)
+    const edgeLabel = heroDiagramTypeID || 'aspecto';
     items.forEach(function (_, i) {
       const p = pointAt(i);
-      // Line from edge of center node to edge of child node, both rectangular.
-      // Compute intersection points by clipping toward each box; approximate by trimming a fixed offset along the angle.
       const dx = Math.cos(p.ang), dy = Math.sin(p.ang);
-      const cOff = 155;           // distance from center to outside of center node
-      const tOff = 120;           // distance from child center back toward center
+      const cOff = 155;
+      const tOff = 120;
       const x1 = cx + dx * cOff;
       const y1 = cy + dy * cOff;
       const x2 = p.x - dx * tOff;
       const y2 = p.y - dy * tOff;
-      parts.push('<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#f0a33a" stroke-width="1.5" opacity="0.75"/>');
-      // Arrow tip at child end
+      parts.push('<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="var(--accent)" stroke-width="1.5" opacity="0.75"/>');
+      // Arrow tip
       const ax = x2 - dx * 10, ay = y2 - dy * 10;
       const px = -dy * 5, py = dx * 5;
-      parts.push('<path d="M ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' L ' + (ax + px).toFixed(1) + ' ' + (ay + py).toFixed(1) + ' L ' + (ax - px).toFixed(1) + ' ' + (ay - py).toFixed(1) + ' Z" fill="#f0a33a"/>');
+      parts.push('<path d="M ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' L ' + (ax + px).toFixed(1) + ' ' + (ay + py).toFixed(1) + ' L ' + (ax - px).toFixed(1) + ' ' + (ay - py).toFixed(1) + ' Z" fill="var(--accent)"/>');
 
-      // Edge label "aspecto" — placed at midpoint of the visible connector
+      // Edge label
       const lx = cx + dx * ((cOff + p.r - tOff) / 2 + cOff);
       const ly = cy + dy * ((cOff + p.r - tOff) / 2 + cOff);
       parts.push('<g transform="translate(' + lx.toFixed(1) + ' ' + ly.toFixed(1) + ')">');
-      parts.push('<rect x="-57" y="-17" width="114" height="34" rx="3" fill="#0a1422" stroke="#f0a33a" stroke-width="1"/>');
-      parts.push('<text x="0" y="7" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#f0a33a">aspecto</text>');
+      parts.push('<rect x="-57" y="-17" width="114" height="34" rx="3" fill="var(--paper)" stroke="var(--accent)" stroke-width="1"/>');
+      parts.push('<text x="0" y="7" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="var(--accent)">' + escapeHTML(edgeLabel) + '</text>');
       parts.push('</g>');
     });
 
-    // Center node — yellow box with the root label
+    // Center node
     parts.push('<g class="hero-diagram-center" transform="translate(' + cx + ' ' + cy + ')">');
-    parts.push('<rect x="-240" y="-100" width="480" height="200" rx="4" fill="#0a1422" stroke="#f0a33a" stroke-width="2.5" filter="url(#hd-glow)"/>');
-    const centerLines = wrapText(root.concept || "Inf\u00e2ncia algor\u00edtmica", 14, 2);
+    parts.push('<rect x="-240" y="-100" width="480" height="200" rx="4" fill="var(--paper)" stroke="var(--accent)" stroke-width="2.5" filter="url(#hd-glow)"/>');
+    const centerLines = wrapText(root.concept || "Ciberespaço", 14, 2);
     const centerStartY = -17 - (centerLines.length - 1) * 28;
     centerLines.forEach(function (line, i) {
-      parts.push('<text x="0" y="' + (centerStartY + i * 56) + '" text-anchor="middle" font-family="IBM Plex Sans, Inter, sans-serif" font-weight="800" font-size="52" fill="#f0a33a" letter-spacing="-0.02em">' + escapeHTML(line) + '</text>');
+      parts.push('<text x="0" y="' + (centerStartY + i * 56) + '" text-anchor="middle" font-family="IBM Plex Sans, Inter, sans-serif" font-weight="800" font-size="52" fill="var(--accent)" letter-spacing="-0.02em">' + escapeHTML(line) + '</text>');
     });
-    parts.push('<text x="0" y="76" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="21" fill="#7a8aa3" letter-spacing="0.18em">CONCEITO RAIZ</text>');
+    parts.push('<text x="0" y="76" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="21" fill="var(--muted)" letter-spacing="0.18em">CONCEITO RAIZ</text>');
     parts.push('</g>');
 
     // Child nodes
@@ -722,19 +741,19 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       const titleLines = wrapText(it.label, 16, 2);
       const descLines  = wrapText(it.description, 16, 3);
       parts.push('<g class="hero-diagram-node" data-slug="' + escapeHTML(it.slug) + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')">');
-      parts.push('<rect x="' + (-childW / 2) + '" y="' + (-childH / 2) + '" width="' + childW + '" height="' + childH + '" rx="3" fill="#0a1422" stroke="#f0a33a" stroke-width="1.5"/>');
+      parts.push('<rect x="' + (-childW / 2) + '" y="' + (-childH / 2) + '" width="' + childW + '" height="' + childH + '" rx="3" fill="var(--paper)" stroke="var(--accent)" stroke-width="1.5"/>');
       // Title strip
       const titleY = -childH / 2 + 38;
       titleLines.forEach(function (line, j) {
-        parts.push('<text x="0" y="' + (titleY + j * 32) + '" text-anchor="middle" font-family="IBM Plex Sans, Inter, sans-serif" font-weight="700" font-size="28" fill="#f0a33a">' + escapeHTML(line) + '</text>');
+        parts.push('<text x="0" y="' + (titleY + j * 32) + '" text-anchor="middle" font-family="IBM Plex Sans, Inter, sans-serif" font-weight="700" font-size="28" fill="var(--accent)">' + escapeHTML(line) + '</text>');
       });
       // Separator
       const sepY = titleY + titleLines.length * 32 - 4;
-      parts.push('<line x1="' + (-childW / 2 + 18) + '" y1="' + sepY + '" x2="' + (childW / 2 - 18) + '" y2="' + sepY + '" stroke="#1f3149" stroke-width="1"/>');
-      // Description (blue)
+      parts.push('<line x1="' + (-childW / 2 + 18) + '" y1="' + sepY + '" x2="' + (childW / 2 - 18) + '" y2="' + sepY + '" stroke="var(--line-strong)" stroke-width="1"/>');
+      // Description
       const descStartY = sepY + 22;
       descLines.forEach(function (line, j) {
-        parts.push('<text x="' + (-childW / 2 + 16) + '" y="' + (descStartY + j * 30) + '" text-anchor="start" font-family="Inter, sans-serif" font-size="26" fill="#8edcea">' + escapeHTML(line) + '</text>');
+        parts.push('<text x="' + (-childW / 2 + 16) + '" y="' + (descStartY + j * 30) + '" text-anchor="start" font-family="Inter, sans-serif" font-size="26" fill="var(--link)">' + escapeHTML(line) + '</text>');
       });
       parts.push('</g>');
     });
@@ -742,7 +761,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     parts.push('</svg>');
     container.innerHTML = parts.join("");
 
-    // Click handlers on child nodes — navigate to concept page.
+    // Click handlers on child nodes
     const nodes = container.querySelectorAll(".hero-diagram-node");
     nodes.forEach(function (node) {
       node.style.cursor = "pointer";
@@ -751,7 +770,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
         if (slug) location.hash = conceptUrl(slug);
       });
     });
-    // Center node also clickable, leads to root
+    // Center node also clickable
     const center = container.querySelector(".hero-diagram-center");
     if (center) {
       center.style.cursor = "pointer";
