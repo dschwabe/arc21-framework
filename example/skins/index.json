@@ -1,0 +1,7 @@
+{
+  "defaultSkin": "linear",
+  "skins": [
+    { "id": "linear",          "label": "Linear" },
+    { "id": "concept-default", "label": "Concept" }
+  ]
+}

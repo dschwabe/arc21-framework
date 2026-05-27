@@ -1,0 +1,482 @@
+/* ============================================================
+   Scrollytelling skin — skins/scrolly/scrolly.css
+   All rules scoped under body.skin-scrolly so multiple skin
+   CSS files can coexist without visual bleed.
+   ============================================================ */
+
+body.skin-scrolly { background: #07101A; }
+
+body.skin-scrolly .app { padding: 0; max-width: none; width: 100%; }
+
+body.skin-scrolly .scrolly-stage {
+  --scrolly-accent: #C9A961;
+  --scrolly-paper: #07101A;
+  --scrolly-ink: #E8E3D6;
+  --scrolly-muted: #8A93A0;
+  --scrolly-nav-idle: #2A3A4A;
+  --scrolly-font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --scrolly-font-head: "Cormorant Garamond", "IBM Plex Sans", Georgia, serif;
+  --scrolly-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  position: relative;
+  background: var(--scrolly-paper);
+  color: var(--scrolly-ink);
+  font-family: var(--scrolly-font-body);
+  font-weight: 300;
+  line-height: 1.78;
+  overflow-x: hidden;
+}
+body.skin-scrolly .scrolly-stage * { box-sizing: border-box; }
+
+/* ---- Progress bar ---- */
+body.skin-scrolly .scrolly-stage .scrolly-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(201, 169, 97, 0.15);
+  z-index: 500;
+}
+body.skin-scrolly .scrolly-stage .scrolly-bar-fill {
+  height: 100%; width: 0;
+  background: var(--scrolly-accent);
+  transition: width 80ms linear;
+}
+
+/* ---- Back button ---- */
+body.skin-scrolly .scrolly-stage .scrolly-top {
+  position: fixed;
+  top: 18px;
+  right: clamp(16px, 3vw, 28px);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+body.skin-scrolly .scrolly-stage .scrolly-back {
+  display: inline-flex; align-items: center;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 14, 22, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--scrolly-ink);
+  font-family: var(--scrolly-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+body.skin-scrolly .scrolly-stage .scrolly-back:hover {
+  color: var(--scrolly-accent);
+  border-color: rgba(201, 169, 97, 0.4);
+}
+
+/* ---- Chapter navigation ---- */
+body.skin-scrolly .scrolly-stage .scrolly-nav {
+  position: fixed;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+body.skin-scrolly .scrolly-stage .scrolly-nav a {
+  display: flex; align-items: center;
+  font-family: var(--scrolly-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--scrolly-nav-idle);
+  text-decoration: none;
+  transition: color 250ms, transform 250ms;
+}
+body.skin-scrolly .scrolly-stage .scrolly-nav a::before {
+  content: "";
+  display: inline-block;
+  width: 14px; height: 1px;
+  background: currentColor;
+  margin-right: 9px;
+  transition: width 250ms;
+}
+body.skin-scrolly .scrolly-stage .scrolly-nav a.on {
+  color: var(--scrolly-accent);
+  transform: translateX(-7px);
+}
+body.skin-scrolly .scrolly-stage .scrolly-nav a.on::before { width: 24px; }
+@media (max-width: 900px) {
+  body.skin-scrolly .scrolly-stage .scrolly-nav { display: none; }
+}
+
+/* ---- Hero section ---- */
+body.skin-scrolly .scrolly-stage .scrolly-hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+  padding: 80px 24px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(201, 169, 97, 0.06), transparent 60%),
+    var(--scrolly-paper);
+}
+body.skin-scrolly .scrolly-stage .scrolly-hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='1.4' fill='%23C9A961' fill-opacity='0.14'/%3E%3C/svg%3E");
+  background-size: 32px 32px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+body.skin-scrolly .scrolly-stage .scrolly-hero-body { position: relative; z-index: 2; max-width: 920px; }
+body.skin-scrolly .scrolly-stage .scrolly-eyebrow {
+  font-family: var(--scrolly-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--scrolly-accent);
+  margin: 0 0 32px;
+}
+body.skin-scrolly .scrolly-stage .scrolly-title {
+  font-family: var(--scrolly-font-head);
+  font-size: clamp(60px, 10.5vw, 148px);
+  font-weight: 500;
+  line-height: 0.93;
+  letter-spacing: -0.026em;
+  margin: 0 0 30px;
+  background: linear-gradient(168deg, #F5EFE0 0%, var(--scrolly-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+body.skin-scrolly .scrolly-stage .scrolly-sub {
+  font-family: var(--scrolly-font-head);
+  font-style: italic;
+  font-size: clamp(18px, 2.6vw, 27px);
+  color: var(--scrolly-muted);
+  max-width: 580px;
+  margin: 0 auto 52px;
+  line-height: 1.5;
+}
+body.skin-scrolly .scrolly-stage .scrolly-year {
+  font-family: var(--scrolly-font-mono);
+  font-size: 12px;
+  color: #364455;
+  letter-spacing: 0.36em;
+  margin: 0 0 78px;
+}
+body.skin-scrolly .scrolly-stage .scrolly-cue {
+  font-family: var(--scrolly-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  color: #364455;
+  text-transform: uppercase;
+  margin: 0;
+}
+body.skin-scrolly .scrolly-stage .scrolly-cue::after {
+  content: "";
+  display: block; width: 1px; height: 42px;
+  background: linear-gradient(#364455, transparent);
+  margin: 10px auto 0;
+  animation: scrolly-blink 2.3s ease-in-out infinite;
+}
+@keyframes scrolly-blink { 0%,100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* ---- Narrative-level fixed background ---- */
+/* Sticky positioning keeps this div at viewport top while chapters scroll over it.
+   margin-bottom: -100vh pulls subsequent elements up so the hero starts at y=0. */
+body.skin-scrolly .scrolly-stage .scrolly-fixed-bg {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  margin-bottom: -100vh;
+  background-size: cover;
+  background-position: center;
+  background-color: #07101A;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---- Chapter: two-column layout ---- */
+body.skin-scrolly .scrolly-stage .scrolly-chapter {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  /* z-index creates a stacking context so chapter contents sit above the fixed bg */
+  z-index: 1;
+}
+
+/* Per-chapter bg override (element-specific images only) */
+body.skin-scrolly .scrolly-stage .scrolly-bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: #07101A;
+}
+
+/* Gradient overlay — darkens left side for text legibility */
+body.skin-scrolly .scrolly-stage .scrolly-ovl {
+  position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(7, 16, 26, 0.72) 0%,
+    rgba(7, 16, 26, 0.50) 55%,
+    rgba(7, 16, 26, 0.10) 75%,
+    rgba(7, 16, 26, 0.00) 100%
+  );
+}
+
+/* Two-column flex container, sits above the background */
+body.skin-scrolly .scrolly-stage .scrolly-columns {
+  position: absolute; inset: 0;
+  z-index: 2;
+  display: flex;
+}
+
+/* Left text pane — 65% width, transparent */
+body.skin-scrolly .scrolly-stage .scrolly-text-pane {
+  width: 65%;
+  display: flex;
+  align-items: center;
+  padding: clamp(40px, 5vw, 80px) clamp(28px, 5vw, 72px);
+  overflow: hidden;
+}
+
+/* Scrollable text container — JS sets font-size to fill 80% of pane height */
+body.skin-scrolly .scrolly-stage .scrolly-text-inner {
+  width: 100%;
+  overflow: hidden;
+  /* font-size is set by JS fitTextPane(); children use em so they scale with it */
+  font-size: 16px;
+}
+
+/* Right image pane — 35% width, slideshow */
+body.skin-scrolly .scrolly-stage .scrolly-image-pane {
+  width: 35%;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+body.skin-scrolly .scrolly-stage .scrolly-slide {
+  position: absolute; inset: 10%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out;
+}
+body.skin-scrolly .scrolly-stage .scrolly-slide.active { opacity: 1; }
+
+/* ---- Chapter text typography (em-based so JS font scaling works) ---- */
+body.skin-scrolly .scrolly-stage .scrolly-chlbl {
+  font-family: var(--scrolly-font-mono);
+  font-size: 0.625em;
+  letter-spacing: 0.38em;
+  color: var(--scrolly-accent);
+  text-transform: uppercase;
+  margin: 0 0 1em;
+  display: flex; align-items: center; gap: 0.75em;
+}
+body.skin-scrolly .scrolly-stage .scrolly-chlbl::after {
+  content: "";
+  flex: 0 0 1.5em;
+  height: 1px;
+  background: var(--scrolly-accent);
+}
+body.skin-scrolly .scrolly-stage .scrolly-h2 {
+  font-family: var(--scrolly-font-head);
+  font-weight: 500;
+  font-size: clamp(2em, 4.5vw, 3.75em);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  margin: 0 0 1em;
+  color: #F2EDE3;
+}
+body.skin-scrolly .scrolly-stage .scrolly-text-inner p {
+  font-size: 1em;
+  line-height: 1.9;
+  margin: 0 0 0.75em;
+  color: #C4BFB5;
+  font-weight: 300;
+  font-family: var(--scrolly-font-body);
+  max-width: none;
+}
+body.skin-scrolly .scrolly-stage .scrolly-text-inner p:last-child { margin-bottom: 0; }
+body.skin-scrolly .scrolly-stage .scrolly-text-inner strong { color: #E4DFD5; font-weight: 500; }
+body.skin-scrolly .scrolly-stage .scrolly-text-inner em { color: var(--scrolly-accent); font-style: italic; }
+body.skin-scrolly .scrolly-stage .scrolly-text-inner a {
+  color: var(--scrolly-accent);
+  text-decoration-color: rgba(201, 169, 97, 0.45);
+  text-underline-offset: 0.2em;
+}
+body.skin-scrolly .scrolly-stage .scrolly-text-inner a:hover { color: #E8D9A6; }
+body.skin-scrolly .scrolly-stage .scrolly-text-inner .pull {
+  font-family: var(--scrolly-font-head);
+  font-style: italic;
+  font-size: clamp(1.25em, 2.3vw, 1.75em);
+  line-height: 1.38;
+  color: var(--scrolly-accent);
+  padding: 0.8em 0 0.8em 1em;
+  margin: 1em 0;
+  border-left: 1px solid rgba(201, 169, 97, 0.5);
+  letter-spacing: -0.005em;
+}
+
+/* ---- Outro ---- */
+body.skin-scrolly .scrolly-stage .scrolly-outro {
+  padding: 110px 24px 90px;
+  text-align: center;
+  background: var(--scrolly-paper);
+}
+body.skin-scrolly .scrolly-stage .scrolly-outro-q {
+  font-family: var(--scrolly-font-head);
+  font-style: italic;
+  font-size: clamp(24px, 3.2vw, 40px);
+  line-height: 1.38;
+  color: #E4DFD5;
+  max-width: 780px;
+  margin: 0 auto 48px;
+}
+body.skin-scrolly .scrolly-stage .scrolly-outro-q em { color: var(--scrolly-accent); font-style: italic; }
+body.skin-scrolly .scrolly-stage .scrolly-rule {
+  width: 50px; height: 1px;
+  background: var(--scrolly-accent);
+  margin: 44px auto;
+}
+body.skin-scrolly .scrolly-stage .scrolly-outro-meta {
+  font-family: var(--scrolly-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  color: #2A3A4A;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ---- Scroll-reveal animation ---- */
+body.skin-scrolly .scrolly-stage .scrolly-fu {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+body.skin-scrolly .scrolly-stage .scrolly-fu.scrolly-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image pane: delay reveal slightly relative to text */
+body.skin-scrolly .scrolly-stage .scrolly-image-pane.scrolly-fu {
+  transition-delay: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.skin-scrolly .scrolly-stage .scrolly-bg,
+  body.skin-scrolly .scrolly-stage .scrolly-slide,
+  body.skin-scrolly .scrolly-stage .scrolly-fu { transition: none; }
+}
+
+/* ---- Mobile: stack columns vertically ---- */
+@media (max-width: 700px) {
+  body.skin-scrolly .scrolly-stage .scrolly-chapter { height: auto; min-height: 100vh; }
+  body.skin-scrolly .scrolly-stage .scrolly-columns { position: relative; flex-direction: column; }
+  body.skin-scrolly .scrolly-stage .scrolly-text-pane { width: 100%; padding: 48px 20px 24px; }
+  body.skin-scrolly .scrolly-stage .scrolly-image-pane {
+    width: 100%;
+    height: 45vw;
+    position: relative;
+    flex-shrink: 0;
+  }
+  body.skin-scrolly .scrolly-stage .scrolly-ovl {
+    background: rgba(7, 16, 26, 0.70);
+  }
+}
+
+/* ---- End-of-narrative action buttons ---- */
+body.skin-scrolly .scrolly-stage .scrolly-actions {
+  padding: 60px 24px 90px;
+  background: var(--scrolly-paper);
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+body.skin-scrolly .scrolly-stage .scrolly-action-btn {
+  padding: 0.65rem 1.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 169, 97, 0.35);
+  background: transparent;
+  color: var(--scrolly-ink);
+  font-family: var(--scrolly-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 200ms, color 200ms, border-color 200ms;
+}
+body.skin-scrolly .scrolly-stage .scrolly-action-btn:hover {
+  background: rgba(201, 169, 97, 0.10);
+  border-color: var(--scrolly-accent);
+  color: var(--scrolly-accent);
+}
+body.skin-scrolly .scrolly-stage .scrolly-action-more {
+  background: rgba(201, 169, 97, 0.12);
+  border-color: var(--scrolly-accent);
+  color: var(--scrolly-accent);
+}
+body.skin-scrolly .scrolly-stage .scrolly-action-more:hover {
+  background: rgba(201, 169, 97, 0.22);
+}
+
+/* ---- "Para saber mais" HTML overlay ---- */
+body.skin-scrolly .scrolly-more-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(7, 16, 26, 0.96);
+  display: flex;
+  flex-direction: column;
+}
+body.skin-scrolly .scrolly-more-overlay[hidden] { display: none; }
+body.skin-scrolly .scrolly-more-bar {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+body.skin-scrolly .scrolly-more-close {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--scrolly-ink);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 200ms, color 200ms;
+}
+body.skin-scrolly .scrolly-more-close:hover {
+  border-color: var(--scrolly-accent);
+  color: var(--scrolly-accent);
+}
+body.skin-scrolly .scrolly-more-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+/* ---- Sidebar flash animation (used by "Sair" button) ---- */
+@keyframes scrolly-sidebar-flash {
+  0%   { box-shadow: 0 0 0 0   rgba(201, 169, 97, 0.8); }
+  40%  { box-shadow: 0 0 0 12px rgba(201, 169, 97, 0.3); }
+  100% { box-shadow: 0 0 0 0   rgba(201, 169, 97, 0);   }
+}
+body.skin-scrolly .scrolly-sidebar-flash {
+  animation: scrolly-sidebar-flash 0.9s ease-out forwards;
+}

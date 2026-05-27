@@ -1,0 +1,68 @@
+{
+  "instructions": {
+    "title": "Como navegar neste site",
+    "intro": "Este site permite percorrer um grafo conceitual sobre infância algorítmica. As páginas são geradas a partir de uma planilha ou CSV, e cada conceito pode ser explorado por links internos, relações e histórico.",
+    "sections": [
+      {
+        "heading": "1. Carregar a base de conceitos",
+        "items": [
+          "Na página inicial, use “Selecionar arquivo CSV ou XLSX local” para carregar a planilha do grafo.",
+          "Ao abrir o site diretamente como arquivo local no Windows, essa opção é mais confiável do que carregar por caminho relativo.",
+          "A planilha XLSX deve conter as abas “Concepts” e “Relations”."
+        ]
+      },
+      {
+        "heading": "2. Explorar conceitos",
+        "items": [
+          "Clique em qualquer link dentro da descrição para abrir o conceito correspondente.",
+          "Use a lista lateral para acessar rapidamente qualquer conceito do grafo.",
+          "Na parte superior, a trilha mostra o caminho calculado desde “Infância algorítmica” até o conceito atual."
+        ]
+      },
+      {
+        "heading": "3. Histórico e retorno",
+        "items": [
+          "Use “Voltar” para retornar ao conceito visitado anteriormente.",
+          "Use “Histórico” para ver os conceitos já visitados e salvar esse percurso em um arquivo local."
+        ]
+      },
+      {
+        "heading": "4. Imagens e fontes",
+        "items": [
+          "Quando um conceito tiver imagem, ela será exibida no painel direito.",
+          "Se não houver imagem, o espaço fica visualmente vazio.",
+          "As ferramentas para atualizar a URL ou gerar snapshot ficam recolhidas em “Atualizar imagem e fonte do post”."
+        ]
+      }
+    ]
+  },
+  "tooltips": {
+    ".nav-link": "Abrir a página inicial.",
+    "#backBtn": "Voltar ao conceito visitado anteriormente ou à página anterior do navegador.",
+    "#historyBtn": "Abrir o histórico dos conceitos visitados nesta sessão.",
+    "#helpBtn": "Mostrar instruções de navegação e uso do site.",
+    "#loadCsvPathBtn": "Carregar o arquivo informado no campo de caminho relativo. Funciona melhor quando o site é servido por HTTP local.",
+    "#browseCsvBtn": "Selecionar manualmente uma planilha XLSX ou arquivo CSV no seu computador.",
+    "#csvFileInput": "Arquivo local com os conceitos e relações do grafo.",
+    "#csvPathInput": "Caminho relativo do arquivo de dados quando o site é servido localmente.",
+    "#startLink": "Iniciar a navegação pelo conceito raiz do grafo.",
+    "#historyFileInput": "Carregar um arquivo JSON de histórico salvo anteriormente.",
+    "#clearHistoryBtn": "Apagar o histórico de navegação salvo no navegador.",
+    "#saveHistoryBtn": "Salvar o histórico de conceitos visitados como arquivo JSON.",
+    "#sourceUrl": "Abrir a URL pública usada como fonte da imagem do conceito.",
+    "#snapshotToolsBox > summary": "Abrir ferramentas opcionais para atualizar a URL do post ou gerar uma prévia visual.",
+    "#postUrlInput": "Informe aqui a URL pública do post relacionado ao conceito.",
+    "#snapshotServiceInput": "Template do serviço externo usado para gerar uma imagem de snapshot.",
+    "#generateSnapshotBtn": "Gerar uma prévia visual da URL usando o serviço configurado.",
+    "#savePostUrlBtn": "Salvar a URL informada no grafo carregado no navegador.",
+    "#exportCsvBtn": "Exportar o grafo atualizado como CSV.",
+    "#manualSearchLink": "Abrir uma busca na web por posts públicos relacionados ao conceito.",
+    ".brand-logo": "Identidade visual ARQ21 Teia Ciborgue.",
+    "#browseNarrativesBtn": "Selecionar manualmente o arquivo XLSX de narrativas.",
+    "#clearNarrativesBtn": "Remover do navegador as narrativas importadas.",
+    ".narrative-index-link": "Abrir a página inicial desta narrativa.",
+    ".element-nav-button": "Avançar ou voltar entre os elementos da narrativa.",
+    "#homeImportNarrativesBtn": "Abrir o diálogo para importar uma planilha XLSX com narrativas e elementos.",
+    ".open-narrative-import": "Abrir o diálogo de importação de narrativas."
+  }
+}

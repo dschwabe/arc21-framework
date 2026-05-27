@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ARC21 Example</title>
+  <link rel="stylesheet" href="./default.css" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand-logo" aria-label="ARQ21 Teia Ciborgue — voltar à home">
+      <img src="./assets/arc21-logo-dark.png" alt="ARQ21 Teia Ciborgue" />
+    </a>
+
+    <div id="navContext" class="nav-context hidden" aria-live="polite">
+      <div id="navConceptName" class="nav-concept-name"></div>
+      <div id="pathTrail" class="path-trail" title="Caminho da raiz até o conceito atual"></div>
+    </div>
+
+    <nav class="nav">
+      <a href="#/" class="nav-link" data-i18n="nav.home">Home</a>
+      <button id="backBtn" class="nav-button" type="button" data-i18n="nav.back">Voltar</button>
+      <button id="historyBtn" class="nav-button" type="button" data-i18n="nav.history">Histórico</button>
+      <button id="changeSourceBtn" class="nav-button" type="button" title="Trocar arquivo de dados" data-i18n="nav.changeSource" data-i18n-title="nav.changeSource.title">Trocar arquivo</button>
+      <input id="changeSourceFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
+      <select id="topSkinSelect" class="skin-select" aria-label="Skin da narrativa"></select>
+      <select id="topLocaleSelect" class="locale-select" aria-label="Idioma" style="display:none"></select>
+      <button id="helpBtn" class="nav-button" type="button" data-i18n="nav.help">Ajuda</button>
+    </nav>
+  </header>
+
+  <main id="app" class="app" aria-live="polite"></main>
+
+  <dialog id="historyDialog" class="dialog">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2 data-i18n="dialog.history.title">Histórico de navegação</h2>
+        <button class="icon-button" value="close" aria-label="Fechar">×</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+      <div class="dialog-actions">
+        <button id="clearHistoryBtn" class="secondary" type="button" data-i18n="dialog.history.clear">Limpar histórico</button>
+        <button id="saveHistoryBtn" class="primary" type="button" data-i18n="dialog.history.save">Salvar histórico</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="helpDialog" class="dialog help-dialog">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2 id="helpDialogTitle" data-i18n="dialog.help.title">Ajuda</h2>
+        <button class="icon-button" value="close" aria-label="Fechar">×</button>
+      </div>
+      <div id="helpDialogContent" class="help-content"></div>
+      <div class="dialog-actions">
+        <button class="primary" value="close" type="submit" data-i18n="common.close">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="narrativeImportDialog" class="dialog narrative-import-dialog">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2 data-i18n="dialog.narrativeImport.title">Importar narrativas</h2>
+        <button class="icon-button" value="close" aria-label="Fechar">×</button>
+      </div>
+      <div class="help-content">
+        <p>Selecione uma planilha XLSX com as abas <code>Narratives</code> e <code>Elements</code>. A aba <code>Elements</code> deve incluir <code>elementTitle</code>.</p>
+        <p>No formato consolidado <code>conceptual_graph.xlsx</code>, essas abas já vêm junto com <code>Concepts</code>, <code>Relations</code> e <code>Relation Types</code> — basta usar “Trocar arquivo” no topo.</p>
+        <div class="file-loader">
+          <button id="browseNarrativesBtn" class="primary" type="button" data-i18n="dialog.narrativeImport.browse">Selecionar arquivo de narrativas</button>
+          <input id="narrativesFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
+          <p id="selectedNarrativesFile" class="file-name" data-i18n="dialog.narrativeImport.noFile">Nenhum arquivo de narrativas selecionado.</p>
+        </div>
+        <div id="narrativeImportStatus" class="status"></div>
+      </div>
+      <div class="dialog-actions">
+        <button id="clearNarrativesBtn" class="secondary" type="button" data-i18n="dialog.narrativeImport.clear">Limpar narrativas</button>
+        <button class="primary" value="close" type="submit" data-i18n="common.close">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ═══════════════════════════════════════════
+       Narrative PiP Overlay — persistent frame
+       States: (default hidden) · is-pip · is-full
+  ═══════════════════════════════════════════ -->
+  <div id="narrativeOverlay" class="n-overlay" data-mode="scrolly" aria-live="polite" aria-label="Narrativa">
+    <div class="n-suspended-badge" aria-hidden="true" data-i18n="pip.suspended">Em pausa</div>
+    <div id="nOverlayDrag" class="n-drag"></div>
+
+    <!-- PiP thumbnail card -->
+    <div class="n-pip-card" id="nPipCard">
+      <div class="n-pip-top">
+        <span class="n-pip-eyebrow">↳ Narrativa<span class="n-pip-mode-tag" id="nPipModeTag"></span></span>
+        <button class="n-pip-x" id="nPipClose" type="button" aria-label="Fechar narrativa">×</button>
+      </div>
+      <div class="n-pip-body">
+        <h3 class="n-pip-title" id="nPipTitle"></h3>
+        <p class="n-pip-chap" id="nPipChap"></p>
+        <div class="n-pip-prog"><div class="n-pip-prog-fill" id="nPipProgFill" style="width:4%"></div></div>
+        <button class="n-pip-resume" id="nPipResume" type="button">↑ Continuar narrativa</button>
+      </div>
+    </div>
+
+    <!-- Scrollable content area -->
+    <div class="n-scroller" id="nOverlayScroller">
+      <div class="n-bar" id="nOverlayBar">
+        <button class="nav-button n-bar-back" id="nBarBack" type="button" data-i18n="narrative.back">← Sair</button>
+        <span class="n-bar-title" id="nBarTitle"></span>
+        <select id="nSkinSelect" class="skin-select" aria-label="Skin da narrativa"></select>
+        <div class="n-prog-wrap"><div class="n-prog-bar" id="nBarProgFill" style="width:2%"></div></div>
+        <span class="n-bar-counter" id="nBarCounter">—</span>
+        <button class="nav-button" id="nBarMinimize" type="button" data-i18n="narrative.minimize">⊟ Minimizar</button>
+        <button class="icon-button" id="nBarClose"   type="button" aria-label="Fechar">×</button>
+      </div>
+      <div id="nOverlayContent"></div>
+    </div>
+  </div>
+
+  <template id="heroTemplate">
+    <section class="hero">
+      <div class="hero-card is-empty">
+        <div class="hero-grid">
+          <div class="hero-text">
+            <p class="eyebrow">Grafo conceitual navegável</p>
+            <h1>Infância Algorítmica</h1>
+            <p class="hero-lede">
+              Um grafo de conceitos para percorrer a vida das crianças sob plataformas digitais —
+              do mercado da atenção ao registro pré-biográfico, da captura contínua ao tédio que
+              desaparece. <strong>201 conceitos</strong>, <strong>699 relações tipadas</strong>
+              e <strong>narrativas</strong> que costuram caminhos entre eles.
+            </p>
+
+            <div id="datasetSummary" class="dataset-summary" aria-live="polite"></div>
+
+            <div class="hero-actions">
+              <a id="startLink" class="start-link disabled" href="#" aria-disabled="true">
+                Carregue um arquivo para começar
+              </a>
+              <button id="heroChangeSourceBtn" class="nav-button open-change-source" type="button">Trocar arquivo de dados</button>
+            </div>
+
+            <details class="loader-card hero-loader" id="heroLoaderCard">
+              <summary>Carregar manualmente um arquivo CSV ou XLSX</summary>
+
+              <label class="field">
+                <span>Caminho relativo do arquivo XLSX ou CSV, quando servido por HTTP local</span>
+                <input id="csvPathInput" type="text" value="data/conceptual_graph.xlsx" />
+              </label>
+              <button id="loadCsvPathBtn" class="primary" type="button">Carregar por caminho</button>
+
+              <div class="divider"><span>ou</span></div>
+
+              <div class="file-loader">
+                <p class="field-label">Selecionar arquivo XLSX ou CSV local</p>
+                <button id="browseCsvBtn" class="primary" type="button">Selecionar arquivo local</button>
+                <input id="csvFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
+                <p id="selectedCsvFile" class="file-name">Arquivo padrão esperado: <code>data/conceptual_graph.xlsx</code>.</p>
+                <p class="file-note">Por segurança, navegadores não permitem preencher automaticamente o valor de um campo de arquivo local.</p>
+              </div>
+
+              <div class="divider"><span>histórico</span></div>
+
+              <label class="file-field">
+                <span>Selecionar arquivo JSON de histórico salvo</span>
+                <input id="historyFileInput" type="file" accept=".json,application/json" />
+              </label>
+
+              <details class="note">
+                <summary>Observação sobre execução local</summary>
+                <p>
+                  Alguns navegadores bloqueiam <code>fetch()</code> de arquivos locais abertos com
+                  <code>file://</code>. Para carregar por caminho relativo, execute
+                  <code>python3 -m http.server</code> nesta pasta e abra
+                  <code>http://localhost:8000</code>. A opção “Selecionar arquivo local” funciona
+                  diretamente no navegador.
+                </p>
+              </details>
+            </details>
+
+            <div id="dataStatus" class="status" aria-live="polite"></div>
+          </div>
+
+          <figure class="hero-diagram-frame" aria-label="Diagrama de alto nível do grafo conceitual">
+            <div id="heroDiagram" class="hero-diagram" role="img" aria-label="Grafo radial: Infância algorítmica e seus aspectos">
+              <p class="hero-diagram-empty">Carregue o grafo para ver o diagrama de alto nível.</p>
+            </div>
+            <figcaption>Infância algorítmica e seus 12 aspectos — gerado a partir do grafo carregado</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="conceptTemplate">
+    <div class="concept-shell">
+      <aside class="concept-index-pane" aria-label="Índice de navegação" data-i18n-aria="sidebar.ariaLabel">
+        <button class="sidebar-toggle-btn" type="button" aria-label="Recolher navegação" title="Recolher índice" data-i18n-aria="sidebar.collapse.ariaLabel" data-i18n-title="sidebar.collapse.title">‹</button>
+        <details class="sidebar-section concept-index-section">
+          <summary data-i18n="sidebar.conceptIndex">Índice de conceitos</summary>
+          <p data-i18n="sidebar.conceptIndexHint">Selecione qualquer conceito do grafo.</p>
+          <div id="conceptIndexList" class="concept-index-list"></div>
+        </details>
+        <details class="sidebar-section narrative-index-section" open>
+          <summary data-i18n="sidebar.narratives">Narrativas</summary>
+          <div id="narrativeList" class="narrative-list"></div>
+        </details>
+      </aside>
+      <button class="sidebar-expand-tab" type="button" aria-label="Abrir índice" title="Abrir índice" data-i18n-aria="sidebar.expand.ariaLabel" data-i18n-title="sidebar.expand.title">›</button>
+
+      <article class="concept-page">
+        <section class="concept-main">
+          <div class="concept-eyebrow-row">
+            <p class="eyebrow" data-i18n="concept.eyebrow">Conceito</p>
+            <select id="conceptSkinSelect" class="skin-select concept-skin-select" aria-label="Skin do conceito"></select>
+          </div>
+          <h1 id="conceptTitle"></h1>
+          <div id="conceptDescription" class="description"></div>
+
+          <section class="relations-section">
+            <h2 data-i18n="concept.relatedTitle">Conceitos relacionados</h2>
+            <div id="relationsList" class="relations-list"></div>
+          </section>
+
+          <section class="narrative-refs-section" id="narrativeRefs"></section>
+        </section>
+
+        <aside class="concept-media">
+          <div id="conceptGallery" class="gallery" aria-label="Imagens associadas ao conceito"></div>
+        </aside>
+      </article>
+    </div>
+  </template>
+
+  <script type="module" src="./app.js?v=6"></script>
+</body>
+</html>

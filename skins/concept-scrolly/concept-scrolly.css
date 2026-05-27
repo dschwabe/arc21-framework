@@ -1,0 +1,497 @@
+/* =========================================================
+   skins/concept-scrolly/concept-scrolly.css
+   Scrollytelling concept skin — all styles scoped to
+   .concept-scrolly-root. All IDs prefixed scs-.
+   Fonts: Lora (body), DM Sans (UI labels)
+   ========================================================= */
+
+/* ── Tokens ───────────────────────────────────────────── */
+.concept-scrolly-root {
+  --scs-bg:         #070710;
+  --scs-bg-surface: #0c0c1e;
+  --scs-text:       #e4e0d6;
+  --scs-text-muted: rgba(228,224,214,0.38);
+  --scs-accent:     #c89b6e;
+  --scs-accent-dim: rgba(200,155,110,0.22);
+  --scs-border:     rgba(228,224,214,0.10);
+  --scs-border-mid: rgba(228,224,214,0.18);
+  --scs-top:        0px;    /* overridden by JS: topbar offsetHeight */
+  --scs-pad-l:      6vw;
+  --scs-pad-r:      3rem;
+  --scs-serif:      'Lora', 'Georgia', serif;
+  --scs-sans:       'DM Sans', system-ui, sans-serif;
+}
+
+/* ── Neutralise .app container constraints ─────────────── */
+/* The scrolly skin needs full-viewport width and no top padding. */
+#app:has(.concept-scrolly-root) {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* ── Root container ────────────────────────────────────── */
+/* NO overflow-x: hidden — setting any overflow value other than
+   "visible" on an ancestor silently becomes the sticky-positioning
+   scroll container, breaking position:sticky on #scs-sticky-viewport. */
+.concept-scrolly-root {
+  position: relative;
+  width: 100%;
+  color: var(--scs-text);
+  font-family: var(--scs-serif);
+  background: var(--scs-bg);
+}
+
+/* ── Progress bar (fixed, stacked above topbar) ────────── */
+#scs-progress-bar {
+  position: fixed;
+  top: var(--scs-top);
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(to right, var(--scs-accent), #e8c495);
+  z-index: 100;
+  pointer-events: none;
+  transition: width 0.06s linear;
+}
+
+/* ── Scroll container ──────────────────────────────────── */
+#scs-scroll-container {
+  position: relative;
+  width: 100%;
+}
+
+#scs-scroll-spacer {
+  pointer-events: none;
+}
+
+/* ── Sticky viewport ───────────────────────────────────── */
+#scs-sticky-viewport {
+  position: sticky;
+  top: var(--scs-top);
+  width: 100%;
+  height: calc(100svh - var(--scs-top));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Background ────────────────────────────────────────── */
+#scs-bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center 30%;
+  background-color: var(--scs-bg);
+}
+
+#scs-bg-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(7,7,16,0.88) 0%,
+    rgba(7,7,16,0.76) 55%,
+    rgba(7,7,16,0.42) 100%
+  );
+}
+
+/* ── Top bar ───────────────────────────────────────────── */
+#scs-top-bar {
+  position: relative;
+  z-index: 2;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--scs-pad-r) 0 var(--scs-pad-l);
+  flex-shrink: 0;
+}
+
+#scs-piece-title-small {
+  font-family: var(--scs-sans);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--scs-text-muted);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#scs-piece-title-small.visible { opacity: 1; }
+
+#scs-panel-counter {
+  font-family: var(--scs-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--scs-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Accent rule ───────────────────────────────────────── */
+#scs-accent-rule {
+  position: relative;
+  z-index: 2;
+  height: 1px;
+  flex-shrink: 0;
+  background: var(--scs-border);
+}
+
+/* ── Main area ─────────────────────────────────────────── */
+#scs-main-area {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  overflow: visible;
+  min-height: 0;
+}
+
+/* ── Text pane ─────────────────────────────────────────── */
+#scs-text-pane {
+  width: 56%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3.5rem var(--scs-pad-r) 3.5rem var(--scs-pad-l);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Large display title */
+#scs-piece-title-large {
+  position: absolute;
+  top: 50%;
+  left: var(--scs-pad-l);
+  right: var(--scs-pad-r);
+  transform: translateY(-52%);
+  font-family: var(--scs-serif);
+  font-size: clamp(2.6rem, 4.2vw, 4.8rem);
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--scs-text);
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+#scs-piece-title-large.hidden {
+  opacity: 0;
+  transform: translateY(-58%);
+}
+
+/* Body text */
+#scs-text-content {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.9;
+  color: var(--scs-text);
+  width: 100%;
+  transition: opacity 0.35s ease;
+  text-wrap: pretty;
+  will-change: transform;
+}
+
+/* ── Word reveal ───────────────────────────────────────── */
+.scs-word-token { opacity: 0; transition: opacity 0.22s ease; }
+.scs-word-token.revealed { opacity: 1; }
+
+/* ── Wikilinks ─────────────────────────────────────────── */
+.concept-scrolly-root a.wikilink {
+  color: var(--scs-accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--scs-accent-dim);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.concept-scrolly-root a.wikilink:hover {
+  color: #e0b882;
+  border-color: rgba(200,155,110,0.55);
+}
+
+/* ── Panel dots ────────────────────────────────────────── */
+#scs-panel-indicator {
+  position: absolute;
+  bottom: 1.5rem;
+  left: var(--scs-pad-l);
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.scs-panel-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  transition: width 0.35s, background 0.35s, border-radius 0.35s;
+}
+
+.scs-panel-dot.active {
+  width: 18px;
+  border-radius: 2.5px;
+  background: var(--scs-accent);
+}
+
+/* ── Vertical rule ─────────────────────────────────────── */
+#scs-vertical-rule {
+  width: 1px;
+  background: var(--scs-border);
+  flex-shrink: 0;
+  position: relative;
+}
+
+#scs-vertical-rule::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 0;
+  width: 1px;
+  height: 70%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--scs-accent-dim) 30%,
+    var(--scs-accent-dim) 70%,
+    transparent
+  );
+}
+
+/* ── Carousel pane ─────────────────────────────────────── */
+#scs-carousel-pane {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 4rem;
+  transition: opacity 0.5s ease;
+}
+
+#scs-carousel-pane.dimmed { opacity: 0.08; pointer-events: none; }
+#scs-carousel-pane.active { opacity: 1; }
+
+/* ── Image box ─────────────────────────────────────────── */
+#scs-image-box-outer {
+  position: relative;
+  width: min(260px, calc(44vw - 8rem));
+  aspect-ratio: 3 / 4;
+  overflow: visible;
+}
+
+/* Corner brackets */
+.scs-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--scs-accent);
+  border-style: solid;
+  z-index: 10;
+  pointer-events: none;
+}
+.scs-corner.tl { top: -4px;    left: -4px;    border-width: 2px 0 0 2px; }
+.scs-corner.tr { top: -4px;    right: -4px;   border-width: 2px 2px 0 0; }
+.scs-corner.bl { bottom: -4px; left: -4px;    border-width: 0 0 2px 2px; }
+.scs-corner.br { bottom: -4px; right: -4px;   border-width: 0 2px 2px 0; }
+
+/* ── Carousel frame ────────────────────────────────────── */
+#scs-carousel-frame {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+/* ── Stack cards ───────────────────────────────────────── */
+.scs-stack-card {
+  position: absolute;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  top: 0;
+  left: 0;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+  overflow: hidden;
+  background: var(--scs-bg-surface);
+  border: 1px solid var(--scs-border-mid);
+}
+
+.scs-stack-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Carousel meta ─────────────────────────────────────── */
+#scs-carousel-meta {
+  width: min(260px, calc(44vw - 8rem));
+  margin-top: 0.9rem;
+}
+
+#scs-carousel-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--scs-border);
+}
+
+#scs-carousel-label {
+  font-family: var(--scs-sans);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--scs-text-muted);
+  min-height: 1em;
+}
+
+#scs-carousel-dots {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.scs-carousel-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: width 0.3s, background 0.3s, border-radius 0.3s;
+}
+
+.scs-carousel-dot.active {
+  width: 14px;
+  border-radius: 2px;
+  background: var(--scs-accent);
+}
+
+/* ── Bottom bar ────────────────────────────────────────── */
+#scs-bottom-bar {
+  position: relative;
+  z-index: 2;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 var(--scs-pad-r) 0 var(--scs-pad-l);
+  flex-shrink: 0;
+  border-top: 1px solid var(--scs-border);
+}
+
+#scs-scroll-hint {
+  font-family: var(--scs-sans);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: opacity 0.8s ease;
+}
+
+.scs-bounce {
+  display: inline-block;
+  animation: scs-bounce 1.7s ease-in-out infinite;
+}
+
+@keyframes scs-bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(5px); }
+}
+
+/* ── Sidebar tab — styled via .skin-sidebar-tab in default.css ── */
+
+/* ── "Para saber mais" action buttons (visible once scs-at-end is set) ── */
+/* Absolutely positioned so they sit under the text pane (left 56%), centred. */
+#scs-action-buttons {
+  position: absolute;
+  left: 0;
+  right: 44%;      /* 100% - 56% text-pane width */
+  top: 0;
+  bottom: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+}
+.scs-at-end #scs-action-buttons {
+  display: flex;
+}
+.scs-action-btn {
+  padding: 0.38rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 169, 97, 0.4);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--scs-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 200ms, color 200ms, border-color 200ms;
+}
+.scs-action-btn:hover {
+  background: rgba(201, 169, 97, 0.12);
+  border-color: var(--scs-accent, #C9A961);
+  color: var(--scs-accent, #C9A961);
+}
+.scs-action-more {
+  background: rgba(201, 169, 97, 0.12);
+  border-color: var(--scs-accent, #C9A961);
+  color: var(--scs-accent, #C9A961);
+}
+.scs-action-more:hover { background: rgba(201, 169, 97, 0.22); }
+
+/* ── Full-screen HTML overlay ── */
+#scs-more-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(7, 16, 26, 0.96);
+  display: flex;
+  flex-direction: column;
+}
+#scs-more-overlay[hidden] { display: none; }
+.scs-more-bar {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.15);
+}
+.scs-more-close {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 200ms, color 200ms;
+}
+.scs-more-close:hover { border-color: #C9A961; color: #C9A961; }
+.scs-more-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+}

@@ -1,0 +1,12 @@
+{
+  "sites": [
+    {
+      "repo": "dschwabe/Infancia-Algoritmica-V6",
+      "name": "Infância Algorítmica V6"
+    },
+    {
+      "repo": "dschwabe/ARC21-root",
+      "name": "ARC21 Root"
+    }
+  ]
+}

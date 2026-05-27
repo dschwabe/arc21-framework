@@ -1,0 +1,33 @@
+name: Notify dependent sites
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dispatch update event to each registered site
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.FRAMEWORK_NOTIFY_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const { sites } = JSON.parse(fs.readFileSync('dependents.json', 'utf8'));
+            const msg = context.payload.head_commit.message.split('\n')[0];
+            const sha = context.sha.slice(0, 8);
+            for (const site of sites) {
+              const [owner, repo] = site.repo.split('/');
+              try {
+                await github.rest.repos.createDispatchEvent({
+                  owner, repo,
+                  event_type: 'arc21-framework-updated',
+                  client_payload: { sha, message: msg }
+                });
+                console.log(`Notified ${site.repo}`);
+              } catch (e) {
+                console.error(`Failed to notify ${site.repo}: ${e.message}`);
+              }
+            }

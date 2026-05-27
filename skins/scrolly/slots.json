@@ -1,0 +1,9 @@
+{
+  "slots": [
+    { "id": "bg", "type": "background" },
+    { "id": "1",  "type": "background" },
+    { "id": "2",  "type": "background" },
+    { "id": "3",  "type": "background" },
+    { "id": "4",  "type": "background" }
+  ]
+}

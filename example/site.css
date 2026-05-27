@@ -1,0 +1,21 @@
+/* site.css — ARC21 Example (neutral placeholder palette, matches framework defaults) */
+:root {
+  --bg:          #0d0d0d;
+  --paper:       #161616;
+  --panel:       rgba(22, 22, 22, 0.88);
+  --panel-2:     rgba(20, 20, 20, 0.76);
+  --panel-3:     rgba(16, 16, 16, 0.72);
+  --ink:         #f0f0f0;
+  --ink-strong:  #ffffff;
+  --muted:       #999999;
+  --muted-2:     #bbbbbb;
+  --line:        rgba(68, 136, 255, 0.15);
+  --line-strong: rgba(68, 136, 255, 0.30);
+  --accent:      #4488ff;
+  --accent-2:    #2266dd;
+  --accent-soft: rgba(68, 136, 255, 0.14);
+  --link:        #88aaff;
+  --link-hover:  #bbccff;
+  --danger:      #ff8a65;
+  --ok:          #5fd49a;
+}

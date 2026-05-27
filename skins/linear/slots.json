@@ -1,0 +1,6 @@
+{
+  "slots": [
+    { "id": "bg",    "type": "background" },
+    { "id": "cover", "type": "image"      }
+  ]
+}
