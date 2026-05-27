@@ -72,7 +72,7 @@ def sync(framework_path, site_path="."):
         sys.exit(f"Error: framework path not found:\n  {framework_path}")
 
     # Skip CLAUDE.md and docs/ from the framework — they are framework-internal
-    framework_skip = {"CLAUDE.md", "docs", "example", ".git", ".github"}
+    framework_skip = {"CLAUDE.md", "docs", "example", ".git", ".github", "dependents.json"}
 
     copied, skipped = [], []
 
