@@ -628,6 +628,8 @@ on:
 jobs:
   open-issue:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - uses: actions/github-script@v7
         with:
