@@ -508,6 +508,9 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     override = override || {};
     if (override.instructions) merged.instructions = override.instructions;
     merged.tooltips = Object.assign({}, (base && base.tooltips) || {}, override.tooltips || {});
+    Object.keys(override).forEach(function (k) {
+      if (k !== 'instructions' && k !== 'tooltips') merged[k] = override[k];
+    });
     return merged;
   }
 
@@ -593,8 +596,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     app.innerHTML = "";
     app.appendChild(heroTemplate.content.cloneNode(true));
     installHeroHandlers();
-    renderHeroDiagram();
-    loadHelpConfig().then(function () { applyTooltips(app); });
+    loadHelpConfig().then(function () { renderHeroDiagram(); applyTooltips(app); });
   }
 
   function renderHeroDiagram() {
