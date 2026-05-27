@@ -1,3 +1,4 @@
+/* arc21-framework v2 */
 import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=6";
 import { parseCSV } from "./js/parse/csv.js?v=6";
 import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=6";
