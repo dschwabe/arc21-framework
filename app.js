@@ -615,10 +615,13 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       if (_raw) siteConfig = JSON.parse(_raw);
     } catch (e) {}
 
-    // Try a site-owned renderer at ./js/diagram/hero.js.
-    // Sites that need a custom diagram provide this file; absent sites get a
-    // 404 which the catch handler converts into the built-in generic renderer.
-    import('./js/diagram/hero.js').then(function (mod) {
+    // Dispatch to a named renderer: ./js/diagram/<name>.js
+    // The framework ships nebulosa and infra; sites can add their own alongside.
+    // If hero.diagram is not configured, or the named file is absent, use the
+    // built-in generic renderer as fallback.
+    var style = String((siteConfig && siteConfig['hero.diagram']) || '').trim();
+    if (!style) { _renderBuiltinHeroDiagram(container); return; }
+    import('./js/diagram/' + style + '.js').then(function (mod) {
       if (typeof mod.render === 'function') {
         mod.render(container, appStore.graph, siteConfig);
       } else {
