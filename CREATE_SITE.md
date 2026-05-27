@@ -66,10 +66,10 @@ cd "<TARGET_FOLDER>"
 python sync.py "<FRAMEWORK_PATH>"
 ```
 
-Expected output: `✓ Synced 7 items from arc21-framework @ <hash>`
+Expected output: `✓ Synced 8 items from arc21-framework @ <hash>`
 
-This copies `app.js`, `js/`, `skins/` (skin folders), `build.py`, `default.css`,
-and writes `framework.lock`.
+This copies `app.js`, `js/` (including `js/diagram/` renderers), `skins/` (skin folders),
+`build.py`, `default.css`, and writes `framework.lock`.
 
 ---
 
@@ -80,6 +80,39 @@ In `<TARGET_FOLDER>/index.html`, change:
 - Any `<meta name="description">` content to match
 
 Do not modify the `<template>` blocks or any script tags.
+
+---
+
+## Step 4b — Configure the Site sheet in the XLSX
+
+Open `<TARGET_FOLDER>/data/conceptual_graph.xlsx` and find (or create) the **Site**
+sheet. It is a two-column key-value table (columns: `Key`, `Value`).
+
+Essential rows to set:
+
+| Key | Example value | Purpose |
+|---|---|---|
+| `hero.eyebrow` | `Teia conceitual navegável` | Small label above the hero title |
+| `hero.lede` | `Uma teia de conceitos para…` | Hero subtitle / description |
+| `hero.root` | `C001` | conceptID of the root concept shown at the diagram centre |
+| `hero.diagram` | `nebulosa` | Hero diagram renderer to use (see below) |
+
+**Available `hero.diagram` values:**
+
+- `nebulosa` — glowing coloured circles for concepts with `level = nebulosa`
+- `infra` — radial spokes for relations with `relationCategory = infraestrutura`
+- *(omit or leave blank)* — built-in generic radial diagram (no custom renderer)
+- Any other name — the app will try to load `js/diagram/<name>.js`; if absent it
+  falls back to the built-in generic diagram
+
+**To add a custom renderer:**
+1. Create `js/diagram/myrenderer.js` in the site repo (export a
+   `render(container, graph, siteConfig)` function)
+2. Set `hero.diagram: myrenderer` in the Site sheet
+3. The framework ships `nebulosa` and `infra` as examples to follow
+
+The Site sheet is parsed on every XLSX load and stored to `localStorage` so the
+renderer choice persists across page loads.
 
 ---
 
@@ -194,12 +227,13 @@ run `python sync.py` here.
 
 ## Site-specific files (safe to edit here)
 
-  data/              XLSX content
+  data/              XLSX content (including the Site sheet for siteConfig)
   assets/            images, skin packs, concept images
   site.css           palette overrides
   index.html         <title> and meta tags only
   help-config.json   tooltip overrides (create if needed)
   skins/index.json   which skins are active
+  js/diagram/        framework ships nebulosa + infra; add local renderers here
 
 ## Local dev
 

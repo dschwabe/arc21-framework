@@ -107,6 +107,29 @@ inside — those are framework-controlled and will be overwritten by sync.
 Replace the demo spreadsheet with your own. The required sheet structure is
 described in [spreadsheet-format.md](spreadsheet-format.md).
 
+### Site sheet — `data/conceptual_graph.xlsx` → **Site** tab
+
+The Site sheet is a two-column key-value table (`Key`, `Value`). Its contents are
+parsed on every XLSX load and stored in `localStorage` as `siteConfig`. Framework
+features that read `siteConfig` include the hero diagram dispatcher.
+
+| Key | Example value | Purpose |
+|---|---|---|
+| `hero.eyebrow` | `Teia conceitual navegável` | Small label above the hero title |
+| `hero.lede` | `Uma teia de conceitos…` | Hero subtitle |
+| `hero.root` | `C001` | conceptID of the diagram centre concept |
+| `hero.diagram` | `nebulosa` | Hero diagram renderer (see below) |
+
+**Hero diagram renderers** — set `hero.diagram` to one of:
+
+- `nebulosa` — glowing circles (framework-curated; requires concepts with `level = nebulosa`)
+- `infra` — radial spokes (framework-curated; requires relations with `relationCategory = infraestrutura`)
+- *(omit)* — built-in generic radial diagram
+- Any other name — loads `js/diagram/<name>.js` from the site; falls back to built-in if absent
+
+To add a local renderer: create `js/diagram/myrenderer.js` (export `render(container, graph, siteConfig)`),
+set `hero.diagram: myrenderer` in the Site sheet. No framework changes needed.
+
 ### Active skins — `skins/index.json`
 
 ```json
