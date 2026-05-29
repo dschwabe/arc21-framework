@@ -11,6 +11,7 @@ There is no bundler, no transpiler, and no runtime framework.
 ```
 index.html          ← shell; loads app.js as type="module"
 app.js              ← application entry point; routing, data loading, skin dispatch
+explore-graph.js    ← floating Explore Graph panel (visit history → live concept map)
 default.css         ← global base styles and CSS custom properties (tokens)
 
 js/
@@ -145,6 +146,47 @@ narrativeElementUrl(nid, eid)     // → "#narrative/N002/E007"
 ```
 
 Use these helpers everywhere rather than constructing hash strings manually.
+
+---
+
+## Explore Graph (`js/explore-graph.js`)
+
+The Explore Graph (EG) is a floating panel that builds a live map of the concepts
+the user has visited, wiring navigation history into a visual graph.
+
+### Visibility states
+
+The panel has three visibility states controlled by `setMode(mode)`:
+
+| Mode | CSS class | Description |
+|------|-----------|-------------|
+| `"normal"` | *(none)* | Fully visible, draggable, resizable |
+| `"minimized"` | `.eg-minimized` | Title bar only — graph body hidden |
+| `"hidden"` | `.eg-hidden` | Panel not visible |
+
+### Where state changes happen
+
+| Trigger | New state |
+|---------|-----------|
+| Hero page renders | `hidden` |
+| Concept page visited | `normal` (panel shown on first visit) |
+| Narrative opens with scrolly skin | `hidden` (default) |
+| Narrative opens with linear skin | `normal` (default) |
+| Last scrolly element scrolls into view | `normal` |
+| Narrative skin has explicit `egMode` column | Uses that value |
+
+The `egMode` column in the `Narrative Skins` XLSX sheet overrides the
+skin-type default for a specific narrative. Valid values: `hidden`,
+`minimized`, `normal`.
+
+### Public API
+
+```js
+import { visit, setMode } from "./js/explore-graph.js";
+
+visit(slug, concept, graph, fromSlug);  // called by app.js on every concept render
+setMode("hidden" | "minimized" | "normal");  // called by app.js on route changes
+```
 
 ---
 
