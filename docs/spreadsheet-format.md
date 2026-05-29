@@ -135,6 +135,7 @@ Assigns skins to narratives.
 | `templateID` | Links to `Templates.templateID`. Controls scrolly vs. linear layout. |
 | `parameters` | Semicolon-separated `key=value` pairs passed as `skinParams`. |
 | `coverImage` | Cover image path or URL for this skin variant. |
+| `egMode` | Explore Graph visibility when this skin is active: `hidden`, `minimized`, or `normal`. Omit to use the skin-type default (`hidden` for scrolly, `normal` for linear). After the last scrolly element the EG always reveals itself regardless of this setting. |
 | `tags` | Comma-separated tags (informational). |
 
 ---

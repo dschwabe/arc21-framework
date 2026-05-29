@@ -1647,6 +1647,11 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 
 .eg-ext:hover .eg-label { fill: #fff; }
 
+/* ── Minimized state: title bar only ── */
+.eg-minimized .eg-body,
+.eg-minimized .eg-resize-handle { display: none; }
+.eg-minimized { min-height: 0; height: auto !important; }
+
 /* ── Resize handle ── */
 .eg-resize-handle {
   position: absolute;

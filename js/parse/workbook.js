@@ -287,6 +287,7 @@ export function parseNarrativeSkinsSheet(sheetInfo) {
       templateID: get(row, ["templateID", "TemplateID"]),
       parameters: parseKeyValueParams(get(row, ["parameters", "params"])),
       coverImage: get(row, ["coverImage", "cover"]),
+      egMode: String(get(row, ["egMode", "eg_mode", "EGMode", "egmode"]) || "").trim() || null,
       tags: String(get(row, ["tags", "Tags"]) || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean)
     });
   });
