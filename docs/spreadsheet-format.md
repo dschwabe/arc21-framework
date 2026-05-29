@@ -20,6 +20,7 @@ One row per concept.
 | `sourceUrl` | No | Public URL associated with this concept. |
 | `imagePath` | No | Legacy: relative path to an image. Prefer auto-discovery (see [asset-discovery.md](asset-discovery.md)). |
 | `sourceTitle` | No | Display title for the `sourceUrl` link. |
+| `externalRef` | No | Link to a related external site. Two formats accepted: a bare URL (`https://example.com`) or `Label\|URL` (`Site Name\|https://example.com`). When set, a "Aprofunde este tema em …" line appears below the concept description, and both the Relation Diagram and the Explore Graph show a purple dashed node linking to the external site. |
 
 ### `Relations`
 

@@ -141,6 +141,21 @@ export function createConceptDefaultSkin(ctx) {
       }
     }
 
+    // ── External reference link ───────────────────────────────────────────────
+    if (concept.externalRef) {
+      const pipe = concept.externalRef.indexOf("|");
+      const refUrl   = (pipe >= 0 ? concept.externalRef.slice(pipe + 1) : concept.externalRef).trim();
+      const refLabel = (pipe >= 0 ? concept.externalRef.slice(0, pipe)  : concept.externalRef).trim();
+      if (refUrl) {
+        const extLink = document.createElement("p");
+        extLink.className = "concept-external-ref";
+        extLink.innerHTML = _t("concept.externalRef.prompt", "Aprofunde este tema em") +
+          ' <a href="' + escapeAttr(refUrl) + '" target="_blank" rel="noopener">' +
+          escapeHTML(refLabel || refUrl) + '</a>.';
+        descEl.parentNode.insertBefore(extLink, descEl.nextSibling);
+      }
+    }
+
     // ── Relations ────────────────────────────────────────────────────────────
     const relationsList = fragment.querySelector("#relationsList");
     if (!concept.relations || !concept.relations.length) {

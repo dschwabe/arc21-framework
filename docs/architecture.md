@@ -186,6 +186,22 @@ Locale-scoped localStorage keys are produced by `localeSK(baseKey, locale)` in
 `js/i18n.js`, so users switching languages don't see stale data from a
 different language's parse.
 
+### UI string catalog (`i18n/<locale>.json`)
+
+Place a JSON file at `i18n/pt-BR.json` (or any locale code) to override UI
+strings. Every key has a hardcoded fallback so the file is optional. Known keys:
+
+| Key | Default (pt-BR) |
+|-----|-----------------|
+| `concept.diagram.title` | `Mapa de Relações` |
+| `concept.externalRef.prompt` | `Aprofunde este tema em` |
+| `concept.externalRef.edgeLabel` | `site externo` |
+| `concept.relation.connector` | ` é ` |
+| `concept.relatedEmpty` | `Nenhuma relação informada para este conceito.` |
+| `concept.narrativeRefsTitle` | `Aparece nas narrativas` |
+| `concept.pov.fallback` | `Perspectiva` |
+| `eg.title` | `Mapa de exploração` |
+
 ---
 
 ## Extending the framework

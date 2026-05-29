@@ -123,7 +123,8 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       imagePath: get(row, ["imagePath", "ImagePath", "snapshot", "screenshot"]),
       sourceTitle: get(row, ["sourceTitle", "SourceTitle", "postTitle", "source"]),
       level: get(row, ["level", "Level"]),
-      camada: get(row, ["camada", "Camada"])
+      camada: get(row, ["camada", "Camada"]),
+      externalRef: get(row, ["externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"])
     };
     conceptOrder.push(id);
   });
@@ -156,7 +157,7 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       relationName: relationName || relationTypeID,
       explanation: get(row, ["explanation", "Explanation", "explicação", "explicacao"]),
       sourceUrl: source.sourceUrl, imagePath: source.imagePath, sourceTitle: source.sourceTitle,
-      level: source.level, camada: source.camada
+      level: source.level, camada: source.camada, externalRef: source.externalRef
     });
   });
   conceptOrder.forEach(function (id) {
@@ -167,7 +168,7 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       relatedConceptID: "", relatedConcept: "", relationTypeID: "", relationCategory: "",
       relationTypeDescription: "", relationName: "", explanation: "",
       sourceUrl: c.sourceUrl, imagePath: c.imagePath, sourceTitle: c.sourceTitle,
-      level: c.level, camada: c.camada
+      level: c.level, camada: c.camada, externalRef: c.externalRef
     });
   });
   outputRows._sourceFormat = relationHasTypeId ? "xlsx-relation-types" : "xlsx";

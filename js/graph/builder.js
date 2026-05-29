@@ -34,6 +34,7 @@ export function buildGraph(rows) {
         sourceTitle: "",
         level: "",
         camada: "",
+        externalRef: "",
         relations: []
       };
       order.push(slug);
@@ -58,6 +59,7 @@ export function buildGraph(rows) {
     const sourceTitle = get(row, ["sourceTitle", "postTitle", "source title"]);
     const level = get(row, ["level", "Level"]);
     const camada = get(row, ["camada", "Camada"]);
+    const externalRef = get(row, ["externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"]);
 
     const concept = ensureConcept(conceptName);
     if (!concept) { skippedRows++; return; }
@@ -70,6 +72,7 @@ export function buildGraph(rows) {
     if (sourceTitle && !concept.sourceTitle) concept.sourceTitle = sourceTitle;
     if (level && !concept.level) concept.level = level;
     if (camada && !concept.camada) concept.camada = camada;
+    if (externalRef && !concept.externalRef) concept.externalRef = externalRef;
 
     if (relatedName) {
       const related = ensureConcept(relatedName);

@@ -27,6 +27,8 @@
   --accent-fg:   #0d0d0d;
   --danger:      #ff8a65;
   --ok:          #5fd49a;
+  --ext-ref:     #b87fff;
+  --ext-ref-soft: rgba(184, 127, 255, 0.14);
   --shadow:      0 24px 80px rgba(0, 0, 0, 0.45);
   --shadow-sm:   0 12px 34px rgba(0, 0, 0, 0.28);
   --radius:      22px;
@@ -1444,5 +1446,263 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 }
 .app-sidebar-flash {
   animation: app-sidebar-flash 0.9s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Exploration graph panel  (js/explore-graph.js)
+═══════════════════════════════════════════════════════════════ */
+
+.eg-panel {
+  position: fixed;
+  bottom: 1.4rem;
+  right:  1.4rem;
+  z-index: 1100;
+  /* 40% of content area (viewport minus sidebar clamp) × 5:8 aspect ratio */
+  width:  calc(0.4 * (100vw - clamp(230px, 18vw, 340px)));
+  height: calc(0.25 * (100vw - clamp(230px, 18vw, 340px)));
+  min-width:  320px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(6, 13, 22, 0.92);
+  border: 1px solid rgba(68, 136, 255, 0.45);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 28px rgba(0,0,0,.55);
+  overflow: hidden;
+  transition: width .22s ease, height .22s ease, opacity .18s;
+}
+
+.eg-panel.eg-hidden { opacity: 0; pointer-events: none; }
+
+/* Suppress transition during live resize drag */
+.eg-panel.eg-resizing { transition: opacity .18s; }
+
+/* Expanded (full) view */
+.eg-panel.eg-large {
+  width:  90vw;
+  height: 90vh;
+}
+
+/* ── Title bar ── */
+.eg-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .32rem .5rem .32rem .72rem;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid var(--line);
+  cursor: grab;
+  user-select: none;
+  flex: 0 0 auto;
+}
+.eg-bar:active { cursor: grabbing; }
+
+.eg-bar-title {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  flex: 1;
+}
+
+.eg-count {
+  font-size: .63rem;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+.eg-btn {
+  border: none;
+  background: rgba(255,255,255,.07);
+  color: var(--ink);
+  border-radius: 4px;
+  width: 1.55rem;
+  height: 1.55rem;
+  font-size: .8rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  transition: background .14s;
+}
+.eg-btn:hover { background: rgba(255,255,255,.16); }
+
+/* ── SVG body ── */
+.eg-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.eg-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Edges ── */
+.eg-nav-edge {
+  stroke: rgba(68, 136, 255, 0.65);
+  stroke-width: 1.5;
+}
+
+.eg-cross-edge {
+  stroke: rgba(68, 136, 255, 0.45);
+  stroke-width: 1.5;
+}
+
+/* .eg-suggested-edge removed — all non-nav edges use .eg-cross-edge */
+
+.eg-edge-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-style: italic;
+  fill: rgba(68, 136, 255, 0.88);
+  pointer-events: none;
+  /* Dark halo keeps text readable over nodes and background */
+  paint-order: stroke fill;
+  stroke: rgba(6, 13, 22, 0.85);
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+}
+
+/* ── Nodes ── */
+.eg-node-g { cursor: pointer; }
+
+/* Visited (navigated) nodes — dark blue tint */
+.eg-box {
+  fill: rgba(20, 35, 65, 0.94);
+  stroke: rgba(68, 136, 255, 0.38);
+  stroke-width: 1.2;
+  transition: fill .15s, stroke .15s;
+}
+
+.eg-node-g:hover .eg-box {
+  fill: rgba(68, 136, 255, 0.14);
+  stroke: var(--accent);
+}
+
+.eg-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  fill: var(--muted-2);
+  pointer-events: none;
+}
+
+.eg-node-g:hover .eg-label { fill: var(--ink); }
+
+/* ── Unvisited (teal) nodes — bright teal, full brightness ── */
+.eg-suggested .eg-box {
+  fill: rgba(4, 58, 70, 0.94);
+  stroke: rgba(0, 210, 190, 0.58);
+  stroke-width: 1.2;
+}
+.eg-suggested .eg-label { fill: rgba(0, 220, 200, 0.92); }
+.eg-suggested:hover .eg-box {
+  fill: rgba(0, 210, 190, 0.18);
+  stroke: rgba(0, 225, 205, 0.90);
+}
+.eg-suggested:hover .eg-label { fill: #fff; }
+
+/* ── Current node ── */
+.eg-current .eg-box {
+  fill: rgba(68, 136, 255, 0.18);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.eg-current .eg-label { fill: var(--ink-strong); font-weight: 600; }
+
+/* ── Expanded (visited node with open connections) ── */
+.eg-expanded .eg-box {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+/* ── External-ref nodes and edges ── */
+.eg-ext-edge {
+  stroke: var(--ext-ref, #b87fff);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 5;
+  opacity: 0.75;
+}
+
+.eg-ext .eg-box {
+  fill: rgba(184, 127, 255, 0.10);
+  stroke: var(--ext-ref, #b87fff);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.eg-ext .eg-label { fill: var(--ext-ref, #b87fff); }
+
+.eg-ext:hover .eg-box {
+  fill: rgba(184, 127, 255, 0.22);
+  stroke: var(--ext-ref, #b87fff);
+}
+
+.eg-ext:hover .eg-label { fill: #fff; }
+
+/* ── Resize handle ── */
+.eg-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  z-index: 10;
+  opacity: 0.70;
+  background:
+    linear-gradient(135deg,
+      transparent 30%,
+      rgba(180,210,255,0.85) 30%, rgba(180,210,255,0.85) 40%,
+      transparent 40%,
+      transparent 55%,
+      rgba(180,210,255,0.85) 55%, rgba(180,210,255,0.85) 65%,
+      transparent 65%,
+      transparent 80%,
+      rgba(180,210,255,0.85) 80%, rgba(180,210,255,0.85) 90%,
+      transparent 90%
+    );
+  transition: opacity .15s;
+  border-radius: 0 0 8px 0;
+}
+.eg-resize-handle:hover { opacity: 1.0; }
+
+/* ── New edge draw-on animation ── */
+@keyframes eg-draw {
+  from { stroke-dashoffset: var(--eg-el, 500); }
+  to   { stroke-dashoffset: 0; }
+}
+
+.eg-new-edge {
+  animation: eg-draw 0.42s ease-out both;
+}
+
+/* ── New label fade-in ── */
+@keyframes eg-fade-label {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.eg-new-label {
+  animation: eg-fade-label 0.28s ease both;
+}
+
+/* ── New node entrance (pop-in with overshoot) ── */
+@keyframes eg-pop-in {
+  from { opacity: 0; transform: scale(0.55); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.eg-new {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: eg-pop-in .32s cubic-bezier(.34, 1.56, .64, 1) both;
 }
 
