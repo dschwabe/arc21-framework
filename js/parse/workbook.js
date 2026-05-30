@@ -355,6 +355,7 @@ export function parseConceptSkinsSheet(sheetInfo) {
       parameters:     parseKeyValueParams(get(row, ["parameters", "params"])),
       dataSourceType: String(get(row, ["dataSourceType", "sourceType"]) || "").trim(),
       dataSourceID:   String(get(row, ["dataSourceID",   "sourceID"])   || "").trim(),
+      egMode:         String(get(row, ["egMode", "eg_mode", "EGMode"]) || "").trim() || null,
       tags: String(get(row, ["tags", "Tags"]) || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean)
     });
   });
