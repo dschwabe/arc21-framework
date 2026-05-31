@@ -182,7 +182,6 @@ export function createScrollyStagedSkin(ctx) {
       return (
         '<article class="sst-pane" data-index="' + i + '">' +
           '<div class="sst-pane-card">' +
-            '<p class="sst-eyebrow">' + escText(p.eyebrow) + '</p>' +
             '<h2 class="sst-heading">' + escText(p.title) + '</h2>' +
             '<div class="sst-body">' + p.bodyHtml + '</div>' +
           '</div>' +
@@ -548,6 +547,17 @@ export function createScrollyStagedSkin(ctx) {
 
     // ── RAF loop ──────────────────────────────────────────────────────────
     var rafID = 0;
+    var egRevealed = false;
+
+    function revealEG() {
+      if (egRevealed) return;
+      egRevealed = true;
+      var panel = document.getElementById("eg-panel");
+      if (panel) {
+        panel.classList.remove("eg-hidden");
+        panel.classList.remove("eg-minimized");
+      }
+    }
 
     function tick() {
       frame++;
@@ -555,12 +565,20 @@ export function createScrollyStagedSkin(ctx) {
       applyLayers(d);
       updatePaneClasses(d.info.pane);
       if (!prefersRM) drawCanvas();
+      // Reveal the Explore Graph after the last pane has scrolled past
+      if (!egRevealed) {
+        var lastPane = panes[panes.length - 1];
+        if (lastPane && lastPane.classList.contains("past")) revealEG();
+      }
       rafID = requestAnimationFrame(tick);
     }
 
     function init() {
       resize();
       window.addEventListener("resize", resize, { passive: true });
+      // Hide the EG panel while the staged skin is active
+      var panel = document.getElementById("eg-panel");
+      if (panel) panel.classList.add("eg-hidden");
       tick();
       return function cleanup() {
         cancelAnimationFrame(rafID);
@@ -568,6 +586,9 @@ export function createScrollyStagedSkin(ctx) {
         document.documentElement.style.removeProperty("--sst-coldness");
         document.documentElement.style.removeProperty("--sst-stage-brightness");
         document.documentElement.style.removeProperty("--sst-stage-saturation");
+        // Restore EG visibility on unmount
+        var p = document.getElementById("eg-panel");
+        if (p) p.classList.remove("eg-hidden");
       };
     }
 

@@ -193,15 +193,6 @@
 .sst-pane.past   .sst-pane-card { opacity: var(--sst-panel-opacity, 0.16); }
 .sst-pane.future .sst-pane-card { opacity: var(--sst-panel-opacity, 0);    }
 
-/* ── Eyebrow ──────────────────────────────────────────────── */
-.sst-eyebrow {
-  margin:         0 0 0.9rem;
-  font:           600 0.72rem/1.2 var(--sst-sans);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color:          var(--sst-accent);
-}
-
 /* ── Scene heading ────────────────────────────────────────── */
 .sst-heading {
   font-family:    var(--sst-serif);
