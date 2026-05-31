@@ -565,11 +565,8 @@ export function createScrollyStagedSkin(ctx) {
       applyLayers(d);
       updatePaneClasses(d.info.pane);
       if (!prefersRM) drawCanvas();
-      // Reveal the Explore Graph after the last pane has scrolled past
-      if (!egRevealed) {
-        var lastPane = panes[panes.length - 1];
-        if (lastPane && lastPane.classList.contains("past")) revealEG();
-      }
+      // Reveal the Explore Graph once we're deep into the last scene
+      if (!egRevealed && d.toIdx === maxSceneIdx && d.t >= 0.65) revealEG();
       rafID = requestAnimationFrame(tick);
     }
 
