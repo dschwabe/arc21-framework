@@ -9,6 +9,7 @@ import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstanc
 import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=6";
 import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=6";
 import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=6";
+import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=6";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
    CSV columns accepted:
@@ -592,6 +593,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
 
 
   function renderHero() {
+    egSetMode("hidden");
     updateNavContext(null);
     const app = $("#app");
     const heroTemplate = $("#heroTemplate");
@@ -1129,6 +1131,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     const concept = appStore.graph.bySlug[slug];
     addToHistory(concept);
     updateNavContext(concept);
+    egVisit(slug, concept, appStore.graph, getPreviousConcept());
 
     const conceptID = (concept.conceptID || "").toUpperCase();
     const implID = await _resolveConceptSkin(conceptID, querySkin || "");
@@ -1149,6 +1152,10 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
       dataSourceID:     (skinEntry && skinEntry.dataSourceID)   || "",
       parameters:       (skinEntry && skinEntry.parameters)     || {}
     };
+    // Scrolly concept skins hide the EG; explicit egMode on the skin entry overrides.
+    const conceptEgMode = (skinEntry && skinEntry.egMode) ||
+                          (implID.indexOf("scrolly") >= 0 ? "hidden" : "normal");
+    egSetMode(conceptEgMode);
     try {
       const s = await getSkinInstance(implID, _conceptSkinCtx());
       s.render(slug, skinParams);
@@ -1166,6 +1173,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
   var _nState  = "hidden";   // "hidden" | "pip" | "full"
   var _nMode   = "scrolly";  // "scrolly" | "linear"
   var _nID     = null;
+  var _egRevealedAtScrollEnd = false;
   var _nPipDragging = false;
   var _nPipDragX0, _nPipDragY0, _nPipBaseX, _nPipBaseY;
   var N_PIP_W = 334, N_PIP_H = 210, N_PIP_MARGIN = 22;
@@ -1395,12 +1403,24 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
         }
       });
 
-      // Scroll → progress bar
+      // Scroll → progress bar + EG reveal at end of scrolly narrative
       scroller.addEventListener("scroll", function() {
         var fill = document.getElementById("nBarProgFill");
-        if (!fill) return;
-        var max = scroller.scrollHeight - scroller.clientHeight;
-        fill.style.width = (max > 0 ? (scroller.scrollTop / max * 100).toFixed(1) : 0) + "%";
+        if (fill) {
+          var max = scroller.scrollHeight - scroller.clientHeight;
+          fill.style.width = (max > 0 ? (scroller.scrollTop / max * 100).toFixed(1) : 0) + "%";
+        }
+        if (_nMode === "scrolly" && !_egRevealedAtScrollEnd) {
+          var narrative = _nID && getNarrative(_nID);
+          var elems = narrative && narrative.elements ? narrative.elements : [];
+          if (elems.length > 0) {
+            var lastSec = document.getElementById("scrolly-" + elems[elems.length - 1]);
+            if (lastSec && lastSec.getBoundingClientRect().top < scroller.clientHeight * 0.55) {
+              _egRevealedAtScrollEnd = true;
+              egSetMode("normal");
+            }
+          }
+        }
       }, { passive: true });
     }
 
@@ -1537,6 +1557,12 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
     _updateSkinSelect(narrativeID, skinID);
     const activeSkin = resolveNarrativeSkin(narrativeID, skinID) || getDefaultNarrativeSkin(narrativeID);
     const skinParams = (activeSkin && activeSkin.parameters) || {};
+    // Apply EG visibility. Explicit egMode on the skin entry wins;
+    // otherwise scrolly defaults to hidden, linear to normal.
+    const egMode = (activeSkin && activeSkin.egMode) ||
+                   (implID === "scrolly" ? "hidden" : "normal");
+    _egRevealedAtScrollEnd = false;
+    egSetMode(egMode);
     try {
       const s = await getSkinInstance(implID, _skinCtx());
       if (typeof s.render === "function") {
