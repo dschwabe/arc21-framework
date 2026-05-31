@@ -1104,7 +1104,7 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 .narrative-start-action { margin-top: 1.5rem; }
 .narrative-element-title {
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 3.05vw, 3.45rem);
+  font-size: clamp(1.67rem, 3.05vw, 3.12rem);
   line-height: 1.05;
   letter-spacing: -0.045em;
   max-width: 100%;
@@ -1241,7 +1241,7 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   .element-nav-actions { width: 100%; }
   .element-nav-button { flex: 1 1 50%; min-width: 0; }
 
-  .narrative-element-title { font-size: clamp(1.75rem, 8vw, 2.35rem); line-height: 1.08; }
+  .narrative-element-title { font-size: clamp(1.42rem, 8vw, 2.02rem); line-height: 1.08; }
 }
 
 /* ---------- Skin switcher (chip group) ---------- */

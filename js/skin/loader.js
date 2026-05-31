@@ -49,7 +49,7 @@ export function ensureSkinCSS(skinID) {
   var link = document.createElement("link");
   link.id   = cssId;
   link.rel  = "stylesheet";
-  link.href = "skins/" + skinID + "/" + skinID + ".css";
+  link.href = "skins/" + skinID + "/" + skinID + ".css?v=2";
   document.head.appendChild(link);
 }
 

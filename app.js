@@ -1213,7 +1213,7 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
   function _nUpdateBar() {
     var narrative = _nID ? getNarrative(_nID) : null;
     var titleEl = document.getElementById("nBarTitle");
-    if (titleEl && narrative) titleEl.textContent = (narrative.narrativeTitle || _nID) + " \u2014 " + _nID;
+    if (titleEl && narrative) titleEl.textContent = narrative.narrativeTitle || _nID;
     var counterEl = document.getElementById("nBarCounter");
     if (counterEl) counterEl.textContent = "\u2014";
   }
@@ -1234,6 +1234,17 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
           el.appendChild(opt);
         });
         var active = resolveNarrativeSkin(narrativeID, querySkinOrImpl);
+        // When querySkinOrImpl is an impl ID ("scrolly"/"linear"), no stored skin has
+        // that literal skinID, so resolveNarrativeSkin falls back to the default.
+        // Override by finding the skin whose template maps to the requested impl.
+        if (querySkinOrImpl === "scrolly" || querySkinOrImpl === "linear") {
+          var wantScrolly = querySkinOrImpl === "scrolly";
+          var implMatch = skins.find(function(s) {
+            var tpl = getTemplate(s.templateID);
+            return tpl && isScrollyTemplate(tpl) === wantScrolly;
+          });
+          if (implMatch) active = implMatch;
+        }
         el.value = active ? active.skinID : (skins[0] && skins[0].skinID) || "";
       } else {
         [["scrolly", t("narrative.skin.scrolly", "Scrollytelling")], ["linear", t("narrative.skin.linear", "Leitura linear")]].forEach(function (p) {
