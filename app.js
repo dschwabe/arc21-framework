@@ -1510,6 +1510,13 @@ import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, locale
   //   4. skins/index.json defaultSkin
   async function _resolveSkinForNarrative(narrativeID, querySkin) {
     if (querySkin) {
+      // Check global skins index first — allows custom impl IDs (e.g. "scrolly-staged")
+      // to be used directly before _skinImplId falls back to the narrative's stored default.
+      const _idx = await loadSkinIndex();
+      const _entry = (_idx && _idx.skins || []).find(function (s) {
+        return s.id === querySkin && Array.isArray(s.scope) && s.scope.indexOf("narrative") >= 0;
+      });
+      if (_entry) return querySkin;
       const impl = _skinImplId(narrativeID, querySkin);
       if (impl === "scrolly" || impl === "linear") return impl;
     }
