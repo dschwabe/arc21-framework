@@ -5,6 +5,7 @@
     { "id": "linear",          "name": "Linear",          "scope": ["narrative"], "dataContract": { "builtin": true } },
     { "id": "scrolly",         "name": "Scrolly",         "scope": ["narrative"], "dataContract": { "builtin": true } },
     { "id": "concept-default", "name": "Padrão",          "scope": ["concept"],   "dataContract": { "builtin": true } },
-    { "id": "concept-scrolly", "name": "Scrolly",         "scope": ["concept"],   "dataContract": { "type": "narrative", "builtin": true } }
+    { "id": "concept-scrolly",  "name": "Scrolly",         "scope": ["concept"],             "dataContract": { "type": "narrative", "builtin": true } },
+    { "id": "scrolly-staged",  "name": "Staged Scrolly",  "scope": ["narrative", "concept"], "dataContract": { "type": "narrative", "builtin": true } }
   ]
 }

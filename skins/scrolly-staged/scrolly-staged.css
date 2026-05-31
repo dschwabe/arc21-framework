@@ -1,0 +1,256 @@
+/* =========================================================
+   skins/scrolly-staged/scrolly-staged.css
+   Sticky-stage scrollytelling skin.
+   All styles scoped to .scrolly-staged-root.
+   ========================================================= */
+
+/* ── Tokens ──────────────────────────────────────────────── */
+.scrolly-staged-root {
+  --sst-bg:           #070710;
+  --sst-bg-surface:   #0c0c1e;
+  --sst-text:         #e4e0d6;
+  --sst-muted:        rgba(228, 224, 214, 0.78);
+  --sst-accent:       var(--accent, #c89b6e); /* inherits site palette when available */
+  --sst-accent-bright:#e8c495;
+  --sst-accent-dim:   rgba(200, 155, 110, 0.22);
+  --sst-border-soft:  rgba(228, 224, 214, 0.10);
+  --sst-border-mid:   rgba(228, 224, 214, 0.18);
+  --sst-card-bg:      12, 12, 30;             /* RGB triplet for rgba() usage */
+  --sst-serif:        'Lora', Georgia, serif;
+  --sst-sans:         'DM Sans', system-ui, sans-serif;
+  --sst-top:          0px;                    /* overridden by JS: topbar height */
+  /* Animated by engine: */
+  --sst-stage-brightness: 1;
+  --sst-stage-saturation: 1;
+  --sst-coldness:     0;
+}
+
+/* ── Neutralise #app constraints ─────────────────────────── */
+/* The skin needs full-viewport width and no padding. */
+#app:has(.scrolly-staged-root) {
+  padding:   0 !important;
+  max-width: 100% !important;
+  width:     100% !important;
+  margin:    0 !important;
+}
+
+/* ── Root ─────────────────────────────────────────────────── */
+/* overflow-x must NOT be set here — any overflow value other than
+   "visible" on an ancestor silently becomes the sticky scroll
+   container, which breaks position:sticky on .sst-stage. */
+.scrolly-staged-root {
+  position:    relative;
+  font-family: var(--sst-serif);
+  color:       var(--sst-text);
+  background:  var(--sst-bg);
+}
+
+/* ── Stage (sticky) ───────────────────────────────────────── */
+.sst-stage {
+  position: sticky;
+  top:      var(--sst-top);
+  height:   calc(100svh - var(--sst-top));
+  width:    100vw;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 65% 42%, rgba(64, 123, 179, 0.28), transparent 32%),
+    radial-gradient(circle at 22% 70%, rgba(198, 131, 71,  0.16), transparent 28%),
+    linear-gradient(120deg, #070710 0%, #0c0c1e 48%, #05050c 100%);
+  filter: brightness(var(--sst-stage-brightness)) saturate(var(--sst-stage-saturation));
+}
+
+/* ── Atmospheric colour wash ─────────────────────────────── */
+.sst-atmosphere {
+  position:       absolute;
+  inset:          0;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(200, 155, 110, 0.12), transparent 32%),
+    radial-gradient(circle at 20% 86%, rgba(232, 196, 149, 0.10), transparent 28%),
+    linear-gradient(90deg,
+      rgba(0, 0, 0, 0.10),
+      rgba(64, 52, 86, calc(0.12 + var(--sst-coldness) * 0.16)));
+  mix-blend-mode: screen;
+  opacity:        0.95;
+  pointer-events: none;
+}
+
+/* ── Image layers ─────────────────────────────────────────── */
+.sst-layer {
+  position:         absolute;
+  inset:            0;
+  width:            100%;
+  height:           100%;
+  object-fit:       cover;
+  pointer-events:   none;
+  opacity:          0;
+  transform:
+    translate3d(var(--sst-x, 0px), var(--sst-y, 0px), 0)
+    scale(var(--sst-scale, 1));
+  filter:
+    blur(var(--sst-blur, 0px))
+    brightness(var(--sst-brightness, 1))
+    saturate(var(--sst-saturation, 1));
+  transition: opacity 120ms linear;
+  will-change: opacity, transform, filter;
+}
+
+/* Per-layer blend modes and z-ordering */
+.sst-layer.baseRoom           { opacity: 1; z-index: 1;  }
+.sst-layer.softInterfaceDust  { mix-blend-mode: screen; z-index: 8;  }
+.sst-layer.recommendationHalo { mix-blend-mode: screen; z-index: 15; }
+.sst-layer.gestureDataTrails  { mix-blend-mode: screen; z-index: 20; }
+.sst-layer.archiveTileCloud   { mix-blend-mode: screen; z-index: 28; }
+.sst-layer.digitalDouble      { mix-blend-mode: screen; z-index: 34; }
+.sst-layer.cameraFrameOverlay {
+  mix-blend-mode: screen;
+  z-index: 46;
+  /* Drop-shadow overrides the base filter for this layer only. */
+  filter:
+    drop-shadow(0 0 10px rgba(150, 220, 255, 0.75))
+    brightness(var(--sst-brightness, 1))
+    saturate(var(--sst-saturation, 1))
+    blur(var(--sst-blur, 0px));
+}
+.sst-layer.metadataDots    { mix-blend-mode: screen; z-index: 52; }
+.sst-layer.privacyMembrane { mix-blend-mode: screen; z-index: 58; }
+.sst-layer.consentGap      { mix-blend-mode: screen; z-index: 62; }
+.sst-layer.innerDrawings   { mix-blend-mode: screen; z-index: 64; }
+
+/* ── Canvas overlay ───────────────────────────────────────── */
+#sst-canvas {
+  position:       absolute;
+  inset:          0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index:        80;
+}
+
+/* ── Vignette ─────────────────────────────────────────────── */
+.sst-vignette {
+  position:       absolute;
+  inset:          0;
+  pointer-events: none;
+  z-index:        90;
+  background:
+    radial-gradient(circle at 56% 45%,
+      transparent 0%, transparent 44%, rgba(0, 0, 0, 0.36) 100%),
+    linear-gradient(90deg,
+      rgba(0, 0, 0, 0.55), transparent 38%, rgba(0, 0, 0, 0.22));
+}
+
+/* ── Text track ───────────────────────────────────────────── */
+/* Negative top margin overlaps the sticky stage so panes begin
+   at the same scroll position where the stage first appears. */
+.sst-text-track {
+  position:   relative;
+  z-index:    10;
+  margin-top: calc(-1 * (100svh - var(--sst-top)));
+}
+
+/* ── Pane ─────────────────────────────────────────────────── */
+.sst-pane {
+  min-height: 150vh;
+  display:    grid;
+  align-items: center;
+  padding:    12vh 7vw;
+}
+
+/* ── Pane card ────────────────────────────────────────────── */
+.sst-pane-card {
+  width:          min(840px, 94vw);
+  padding:        clamp(1.35rem, 3vw, 2.65rem);
+  border:         1px solid rgba(228, 224, 214, 0.14);
+  border-radius:  28px;
+  background:
+    linear-gradient(140deg,
+      rgba(var(--sst-card-bg), var(--sst-panel-bg-alpha, 0.24)),
+      rgba(var(--sst-card-bg), var(--sst-panel-bg-alpha, 0.24))),
+    radial-gradient(circle at 12% 8%,
+      rgba(200, 155, 110, calc(var(--sst-panel-bg-alpha, 0.24) * 0.16)),
+      transparent 36%);
+  box-shadow:      0 24px 80px rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(20px) saturate(1.2);
+  transform:       translateY(24px) scale(0.985);
+  opacity:         var(--sst-panel-opacity, 0.34);
+  transition:      opacity 320ms ease, transform 320ms ease, border-color 320ms ease;
+}
+
+.sst-pane.active .sst-pane-card {
+  opacity: var(--sst-panel-opacity, 1);
+  background:
+    linear-gradient(140deg,
+      rgba(var(--sst-card-bg), var(--sst-panel-bg-alpha, 1.00)),
+      rgba(var(--sst-card-bg), var(--sst-panel-bg-alpha, 1.00))),
+    radial-gradient(circle at 12% 8%,
+      rgba(200, 155, 110, calc(var(--sst-panel-bg-alpha, 1.00) * 0.16)),
+      transparent 36%);
+  transform:    translateY(0) scale(1);
+  border-color: rgba(228, 224, 214, 0.18);
+}
+
+.sst-pane.past   .sst-pane-card { opacity: var(--sst-panel-opacity, 0.16); }
+.sst-pane.future .sst-pane-card { opacity: var(--sst-panel-opacity, 0);    }
+
+/* ── Eyebrow ──────────────────────────────────────────────── */
+.sst-eyebrow {
+  margin:         0 0 0.9rem;
+  font:           600 0.72rem/1.2 var(--sst-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--sst-accent);
+}
+
+/* ── Scene heading ────────────────────────────────────────── */
+.sst-heading {
+  font-family:    var(--sst-serif);
+  font-weight:    500;
+  font-style:     italic;
+  color:          var(--sst-accent);
+  margin:         0 0 1.15rem;
+  font-size:      clamp(1.9rem, 4.4vw, 4.3rem);
+  line-height:    0.95;
+  letter-spacing: -0.025em;
+  text-wrap:      balance;
+}
+
+/* ── Body text ────────────────────────────────────────────── */
+.sst-body p {
+  font-family: var(--sst-serif);
+  font-size:   clamp(1.08rem, 1.45vw, 1.34rem);
+  line-height: 1.55;
+  color:       var(--sst-muted);
+  margin:      0 0 1rem;
+}
+.sst-body p:last-child { margin-bottom: 0; }
+
+/* ── Wikilinks ────────────────────────────────────────────── */
+.sst-wikilink {
+  color:           var(--sst-accent);
+  text-decoration: none;
+  border-bottom:   1px solid var(--sst-accent-dim);
+  background:      linear-gradient(90deg, rgba(200, 155, 110, 0.16), rgba(232, 196, 149, 0.05));
+  border-radius:   0.38em;
+  padding:         0.01em 0.24em 0.04em;
+  box-shadow:      0 0 20px rgba(200, 155, 110, 0.08);
+  white-space:     nowrap;
+  transition:      color 0.2s ease, border-color 0.2s ease;
+}
+.sst-wikilink:hover {
+  color:        var(--sst-accent-bright);
+  border-color: rgba(200, 155, 110, 0.55);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .sst-pane      { padding: 10vh 4vw; align-items: end; }
+  .sst-pane-card { width: 100%; }
+  .sst-vignette  {
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.72), transparent 54%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sst-layer, .sst-pane-card { transition: none; }
+}

@@ -1,0 +1,22 @@
+{
+  "slots": [
+    { "id": "1",  "type": "image", "layer": "baseRoom",           "note": "Background scene (base room)" },
+    { "id": "2",  "type": "image", "layer": "softInterfaceDust",  "note": "Soft interface / dust overlay" },
+    { "id": "3",  "type": "image", "layer": "recommendationHalo", "note": "Recommendation halo" },
+    { "id": "4",  "type": "image", "layer": "gestureDataTrails",  "note": "Gesture / data trails" },
+    { "id": "5",  "type": "image", "layer": "archiveTileCloud",   "note": "Archive tile cloud" },
+    { "id": "6",  "type": "image", "layer": "cameraFrameOverlay", "note": "Camera frame overlay" },
+    { "id": "7",  "type": "image", "layer": "digitalDouble",      "note": "Digital double" },
+    { "id": "8",  "type": "image", "layer": "metadataDots",       "note": "Metadata dots" },
+    { "id": "9",  "type": "image", "layer": "privacyMembrane",    "note": "Privacy membrane" },
+    { "id": "10", "type": "image", "layer": "consentGap",         "note": "Consent gap overlay" },
+    { "id": "11", "type": "image", "layer": "innerDrawings",      "note": "Inner drawings / final reveal" }
+  ],
+  "notes": [
+    "Place files as assets/skins/<NARRATIVE_ID>/1.jpg (or .png, .webp, .svg) through 11.*",
+    "Alternatively, list named paths in assets/skins/<NARRATIVE_ID>/urls.txt (one per line).",
+    "All layers use mix-blend-mode: screen except slot 1 (baseRoom), which is a normal background.",
+    "Default scene choreography is tuned for exactly 3 narrative elements (N004 / C051).",
+    "With fewer or more elements, a simple linear interpolation is used between scene keyframes."
+  ]
+}
