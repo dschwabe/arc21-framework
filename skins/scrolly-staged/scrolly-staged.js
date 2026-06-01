@@ -778,7 +778,7 @@ export function createScrollyStagedSkin(ctx) {
             function openMore() {
               if (isHtml) {
                 var fr = overlay.querySelector("iframe");
-                if (fr && !fr.src) fr.src = openUrl;
+                if (fr && fr.getAttribute("src") !== openUrl) fr.src = openUrl;
               }
               overlay.hidden = false;
             }
