@@ -559,7 +559,7 @@ export function createScrollyStagedSkin(ctx) {
         panel.classList.remove("eg-minimized");
       }
       var ctaEl = root.querySelector("#sst-cta");
-      if (ctaEl && ctaEl.src) ctaEl.classList.add("sst-cta-visible");
+      if (ctaEl) ctaEl.classList.add("sst-cta-visible"); // src may still be loading; img is invisible without src anyway
     }
 
     function tick() {
