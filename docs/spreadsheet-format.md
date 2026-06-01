@@ -146,14 +146,20 @@ Assigns skins to individual concept pages.
 
 | Column | Description |
 |---|---|
-| `skinID` | Stable skin assignment ID. |
+| `skinID` | Stable skin assignment ID (any unique string). |
 | `conceptID` | The concept this assignment applies to. |
-| `skinName` | Display name in the skin selector. |
-| `skinImplID` | Skin implementation ID — must match an entry in `skins/index.json`. |
+| `skinName` | Display name shown in the skin switcher chip. |
+| `skinImplID` | Skin implementation ID — **must match an entry in `skins/index.json`**. This is what actually loads the skin code. |
 | `isDefault` | `true`/`1` for the default skin for this concept. |
 | `dataSourceType` | e.g. `narrative` — tells the skin where to load content from. |
-| `dataSourceID` | ID of the data source (e.g. a `narrativeID`). |
-| `parameters` | Semicolon-separated `key=value` pairs. |
+| `dataSourceID` | ID of the data source (e.g. a `narrativeID` like `N004`). Required for `concept-scrolly` and `scrolly-staged`. |
+| `egMode` | Explore Graph visibility: `hidden`, `minimized`, or `normal`. Scrolly-type skins default to `hidden`. |
+| `parameters` | Semicolon-separated `key=value` pairs passed to the skin. |
+
+**Skin switcher visibility rule:** skins registered in `skins/index.json` with
+`dataContract.type` (such as `concept-scrolly` and `scrolly-staged`) only appear
+in the switcher for concepts that have a row in this sheet with a matching
+`skinImplID`. This prevents broken options for unconfigured concepts.
 
 ---
 

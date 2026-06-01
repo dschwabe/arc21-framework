@@ -31,19 +31,35 @@ Declares every available skin and sets the global default.
 ```json
 {
   "defaultSkin": "linear",
+  "defaultConceptSkin": "concept-default",
   "skins": [
-    { "id": "linear",           "name": "Linear" },
-    { "id": "scrolly",          "name": "Rolagem" },
-    { "id": "concept-default",  "name": "Conceito padrão" }
-  ],
-  "globalConceptSkins": [
-    { "id": "concept-default",  "name": "Padrão" }
+    { "id": "linear",         "name": "Linear",         "scope": ["narrative"] },
+    { "id": "scrolly",        "name": "Scrolly",        "scope": ["narrative"] },
+    { "id": "concept-default","name": "Padrão",         "scope": ["concept"] },
+    { "id": "concept-scrolly","name": "Scrolly",        "scope": ["concept"],
+      "dataContract": { "type": "narrative" } },
+    { "id": "scrolly-staged", "name": "Staged Scrolly", "scope": ["narrative", "concept"],
+      "dataContract": { "type": "narrative" } }
   ]
 }
 ```
 
-`globalConceptSkins` lists skins available for every concept page. A per-concept
-override can be set in the **ConceptSkins** spreadsheet tab.
+### `scope`
+
+Controls where a skin can be used and whether it appears in the skin switcher:
+
+| Value | Appears in |
+|-------|-----------|
+| `"narrative"` | Narrative skin selector |
+| `"concept"` | Concept skin switcher |
+| `["narrative", "concept"]` | Both |
+
+### `dataContract`
+
+When `dataContract.type` is set, the skin requires a **Concept Skins** XLSX entry
+with a matching `dataSourceID` to work. The skin switcher **only shows the option**
+to a user when that concept has a configured entry for the skin. Without the entry,
+the option is hidden to prevent errors.
 
 ---
 
@@ -150,15 +166,41 @@ Custom skin data (colours, layout toggles, etc.) should be declared in the
 Same steps as above, but:
 
 - The factory receives the concept render context (includes `renderConceptIndex`).
-- Register it under `globalConceptSkins` in `index.json` to make it available
-  for all concepts, or assign it per-concept in the **ConceptSkins** tab.
+- Set `scope` to include `"concept"` in `index.json`.
+- If the skin requires external configuration (e.g. a `dataSourceID`), set
+  `dataContract: { "type": "narrative" }`. The switcher will hide the option for
+  concepts that have no matching entry in the **Concept Skins** sheet.
 
 ---
 
 ## Built-in skins
 
-| ID | Purpose |
-|----|---------|
-| `linear` | Default narrative skin; stacked text + media cards |
-| `scrolly` | Scroll-driven narrative with parallax sections |
-| `concept-default` | Default concept detail page |
+| ID | Scope | Purpose |
+|----|-------|---------|
+| `linear` | narrative | Default narrative skin; stacked text + media cards |
+| `scrolly` | narrative | Scroll-driven narrative with parallax sections and slideshow |
+| `concept-default` | concept | Default concept detail page |
+| `concept-scrolly` | concept | Scrollytelling view of a concept, driven by a narrative (`dataSourceID` required) |
+| `scrolly-staged` | narrative + concept | Sticky layered-stage scrollytelling with up to 11 composited PNG/SVG layers (`dataSourceID` required when used as a concept skin) |
+
+### `scrolly-staged` asset slots
+
+Place layer images in `assets/skins/<narrativeID>/` as numbered files:
+
+| Slot | Layer role |
+|------|-----------|
+| `1` | Base room — normal blend, always visible |
+| `2` | Soft interface dust |
+| `3` | Recommendation halo |
+| `4` | Gesture / data trails |
+| `5` | Archive tile cloud |
+| `6` | Camera frame overlay |
+| `7` | Digital double |
+| `8` | Metadata dots |
+| `9` | Privacy membrane |
+| `10` | Consent gap overlay |
+| `11` | Inner drawings — final reveal |
+
+All layers except slot 1 use `mix-blend-mode: screen`. The default choreography
+is tuned for a 3-element narrative; other element counts use linear interpolation.
+See `skins/scrolly-staged/slots.json` for full notes.

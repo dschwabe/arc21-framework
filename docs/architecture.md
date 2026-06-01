@@ -169,15 +169,18 @@ The panel has three visibility states controlled by `setMode(mode)`:
 | Trigger | New state |
 |---------|-----------|
 | Hero page renders | `hidden` |
-| Concept page visited | `normal` (panel shown on first visit) |
+| Concept page visited with default skin | `normal` |
+| Concept page visited with scrolly-type skin | `hidden` (default) |
+| Concept `egMode` column set explicitly | Uses that value |
 | Narrative opens with scrolly skin | `hidden` (default) |
 | Narrative opens with linear skin | `normal` (default) |
 | Last scrolly element scrolls into view | `normal` |
 | Narrative skin has explicit `egMode` column | Uses that value |
+| `scrolly-staged` skin: 65 % through last scene | `normal` |
 
-The `egMode` column in the `Narrative Skins` XLSX sheet overrides the
-skin-type default for a specific narrative. Valid values: `hidden`,
-`minimized`, `normal`.
+The `egMode` column in the **Narrative Skins** and **Concept Skins** XLSX sheets
+overrides the skin-type default for a specific skin assignment. Valid values:
+`hidden`, `minimized`, `normal`.
 
 ### Public API
 
