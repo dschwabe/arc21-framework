@@ -199,8 +199,23 @@ Place layer images in `assets/skins/<narrativeID>/` as numbered files:
 | `8` | Metadata dots |
 | `9` | Privacy membrane |
 | `10` | Consent gap overlay |
-| `11` | Inner drawings — final reveal |
+| `11` | Inner drawings — final reveal (replaced by CTA if `more.png` is present) |
 
 All layers except slot 1 use `mix-blend-mode: screen`. The default choreography
 is tuned for a 3-element narrative; other element counts use linear interpolation.
 See `skins/scrolly-staged/slots.json` for full notes.
+
+### `scrolly-staged` end-of-narrative CTA widget
+
+When the user reaches the last scene, an optional "Para saber mais" image widget
+can replace slot 11. It is configured through two files in `assets/skins/<narrativeID>/`:
+
+| File | Role |
+|------|------|
+| `more.png` (or `.jpg`, `.webp`) | Clickable image shown as the CTA widget. Discovered automatically by the asset probe. |
+| `more.html` (or any URL in `urls.txt` as `more: <url>`) | Opened in a full-screen iframe overlay when the CTA is clicked. |
+
+Both files are optional independently:
+- Only `more.html` → standard "Para saber mais" button (no image widget; slot 11 plays normally).
+- Both → image widget replaces slot 11; clicking opens `more.html` in iframe overlay.
+- Neither → slot 11 (`innerDrawings`) plays as normal; no CTA.

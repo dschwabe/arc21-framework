@@ -10,13 +10,28 @@
     { "id": "8",  "type": "image", "layer": "metadataDots",       "note": "Metadata dots" },
     { "id": "9",  "type": "image", "layer": "privacyMembrane",    "note": "Privacy membrane" },
     { "id": "10", "type": "image", "layer": "consentGap",         "note": "Consent gap overlay" },
-    { "id": "11", "type": "image", "layer": "innerDrawings",      "note": "Inner drawings / final reveal" }
+    { "id": "11", "type": "image", "layer": "innerDrawings",      "note": "Inner drawings — final reveal. Replaced by the CTA widget if more.png is present." }
+  ],
+  "named_slots": [
+    {
+      "id": "more-img",
+      "type": "image",
+      "note": "CTA widget image (auto-probed as more.jpg / more.png / more.webp etc.). When present, replaces slot 11 at the end of the narrative and becomes clickable.",
+      "discovery": "Probed automatically as 'more' filename in the narrative asset folder."
+    },
+    {
+      "id": "more",
+      "type": "url",
+      "note": "URL opened in a full-screen iframe overlay when the CTA widget is clicked. Set via urls.txt: 'more: more.html' or any absolute URL.",
+      "discovery": "Read from urls.txt named entry 'more: <path-or-url>'."
+    }
   ],
   "notes": [
-    "Place files as assets/skins/<NARRATIVE_ID>/1.jpg (or .png, .webp, .svg) through 11.*",
-    "Alternatively, list named paths in assets/skins/<NARRATIVE_ID>/urls.txt (one per line).",
-    "All layers use mix-blend-mode: screen except slot 1 (baseRoom), which is a normal background.",
+    "Place numbered layer files as assets/skins/<NARRATIVE_ID>/1.jpg (or .png, .webp, .svg) through 11.*",
+    "All layers use mix-blend-mode: screen except slot 1 (baseRoom), which uses normal blend.",
     "Default scene choreography is tuned for exactly 3 narrative elements (N004 / C051).",
-    "With fewer or more elements, a simple linear interpolation is used between scene keyframes."
+    "With fewer or more elements, a simple linear interpolation is used between scene keyframes.",
+    "CTA widget: place more.png (image) and add 'more: more.html' to urls.txt for the full setup.",
+    "If only more.html is configured (no more.png), the standard Para saber mais button is shown instead."
   ]
 }
