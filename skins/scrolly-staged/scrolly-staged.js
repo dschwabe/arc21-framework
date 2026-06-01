@@ -225,6 +225,9 @@ export function createScrollyStagedSkin(ctx) {
     // Full N004 choreography only when the narrative has exactly 3 elements.
     var fullChoreography = (paneCount === SCENE_STATES.length);
     var maxSceneIdx      = Math.min(paneCount, SCENE_STATES.length) - 1;
+    // Set to true by render() after assets load if a more-img was found;
+    // suppresses innerDrawings so the CTA image replaces it cleanly.
+    var hasCTA = false;
 
     var width = 0, height = 0, dpr = 1;
     var particles = [], frame = 0;
@@ -343,7 +346,7 @@ export function createScrollyStagedSkin(ctx) {
               opacity = 0;
             if (name === "digitalDouble")    opacity = 1.00 * (1 - ramp(t, 0.00, 0.16));
             if (name === "privacyMembrane")  opacity = 0.95 * (1 - ramp(t, 0.00, 0.16));
-            if (name === "innerDrawings")    opacity = 0.50 * ramp(t, 0.00, 0.25); // fade in at scene 2 start
+            if (name === "innerDrawings")    opacity = hasCTA ? 0 : 0.50 * ramp(t, 0.00, 0.25);
           }
         }
 
@@ -591,7 +594,7 @@ export function createScrollyStagedSkin(ctx) {
       };
     }
 
-    return { init: init };
+    return { init: init, setCTA: function(v) { hasCTA = !!v; } };
   }
 
   // ── Font loading ──────────────────────────────────────────────────────────
@@ -744,46 +747,47 @@ export function createScrollyStagedSkin(ctx) {
           if (url && el) el.src = url;
         });
 
-        // "Para saber mais" widget — appears at the end (scene 2), above the stage.
-        // Image file (more.jpg/png/…) → full-screen image overlay on click.
-        // HTML file or external URL → iframe overlay (same as standard scrolly).
-        var moreUrl = assets["more"] || "";
-        if (moreUrl) {
-          var isImage = /\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(moreUrl);
-          var ctaEl   = document.getElementById("sst-cta");
-          if (ctaEl) {
-            ctaEl.src = moreUrl;
-            // If revealEG already fired before assets loaded, make visible now
-            if (ctaEl.classList.contains("sst-cta-visible") === false &&
-                document.getElementById("eg-panel") &&
-                !document.getElementById("eg-panel").classList.contains("eg-hidden")) {
-              ctaEl.classList.add("sst-cta-visible");
-            }
+        // "Para saber mais" widget:
+        //   more-img slot  → image shown as clickable CTA widget (e.g. more.png)
+        //   more slot      → URL opened on click (e.g. more.html from urls.txt)
+        var ctaImgUrl  = assets["more-img"] || "";
+        var targetUrl  = assets["more"]     || "";
+        var isHtml     = targetUrl && !/\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(targetUrl);
+
+        if (ctaImgUrl || targetUrl) {
+          var ctaEl = document.getElementById("sst-cta");
+          if (ctaEl && ctaImgUrl) {
+            ctaEl.src = ctaImgUrl;
+            engine.setCTA(true); // suppress innerDrawings, CTA takes its place
           }
 
-          var overlay = document.createElement("div");
-          overlay.className = "sst-more-overlay";
-          overlay.hidden = true;
-          overlay.innerHTML =
-            '<div class="sst-more-bar">' +
-              '<button class="sst-more-close" type="button" aria-label="Fechar">×</button>' +
-            '</div>' +
-            (isImage
-              ? '<img class="sst-more-img" src="' + moreUrl + '" alt="">'
-              : '<iframe class="sst-more-frame" src="" scrolling="yes" frameborder="0"></iframe>');
-          document.body.appendChild(overlay);
+          var openUrl = targetUrl || ctaImgUrl;
+          if (openUrl) {
+            var overlay = document.createElement("div");
+            overlay.className = "sst-more-overlay";
+            overlay.hidden = true;
+            overlay.innerHTML =
+              '<div class="sst-more-bar">' +
+                '<button class="sst-more-close" type="button" aria-label="Fechar">×</button>' +
+              '</div>' +
+              (isHtml
+                ? '<iframe class="sst-more-frame" src="" scrolling="yes" frameborder="0"></iframe>'
+                : '<img class="sst-more-img" src="' + openUrl + '" alt="">');
+            document.body.appendChild(overlay);
 
-          function openMore() {
-            if (!isImage && overlay.querySelector("iframe").getAttribute("src") !== moreUrl) {
-              overlay.querySelector("iframe").src = moreUrl;
+            function openMore() {
+              if (isHtml) {
+                var fr = overlay.querySelector("iframe");
+                if (fr && !fr.src) fr.src = openUrl;
+              }
+              overlay.hidden = false;
             }
-            overlay.hidden = false;
-          }
-          function closeMore() { overlay.hidden = true; }
+            function closeMore() { overlay.hidden = true; }
 
-          overlay.querySelector(".sst-more-close").addEventListener("click", closeMore);
-          if (ctaEl) ctaEl.addEventListener("click", openMore);
-          _cleanupFns.push(function () { overlay.remove(); });
+            overlay.querySelector(".sst-more-close").addEventListener("click", closeMore);
+            if (ctaEl) ctaEl.addEventListener("click", openMore);
+            _cleanupFns.push(function () { overlay.remove(); });
+          }
         }
       } catch (_) {}
     })();

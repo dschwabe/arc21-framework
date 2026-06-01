@@ -217,14 +217,16 @@
 .sst-body p:last-child { margin-bottom: 0; }
 
 /* ── "Para saber mais" CTA — fixed overlay above the stage, outside stacking context ── */
-/* Lives outside .sst-stage so no filter/stacking-context conflicts. */
+/* Position mirrors the innerDrawings layer: centre at (50% - 7vw, 50% - 20vh) of viewport. */
 .sst-cta {
   position:   fixed;
-  bottom:     8vh;
-  left:       50%;
-  transform:  translateX(-50%);
-  max-width:  min(640px, 90vw);
-  max-height: 40vh;
+  top:        calc(50% - 20vh);
+  left:       calc(50% - 7vw);
+  transform:  translate(-50%, -50%) scale(0.5);
+  max-width:  100vw;
+  max-height: 100vh;
+  width:      100vw;
+  height:     100vh;
   object-fit: contain;
   cursor:     pointer;
   opacity:    0;

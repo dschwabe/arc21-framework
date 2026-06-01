@@ -110,9 +110,10 @@ export async function loadSkinAssets(scope, id) {
   if (!isConcept) {
     const bgUrl = await probeFile(folder, "bg");
     if (bgUrl) result["bg"] = bgUrl;
-    // more slot — image file takes priority over any urls.txt entry
-    const moreUrl = await probeFile(folder, "more");
-    if (moreUrl) result["more"] = moreUrl;
+    // more-img slot: image file used as a clickable CTA widget (separate from the
+    // "more" URL target which comes from urls.txt and may point to an HTML file)
+    const moreImgUrl = await probeFile(folder, "more");
+    if (moreImgUrl) result["more-img"] = moreImgUrl;
   }
 
   // 2. Numbered slots — probe 1, 2, 3 … until first gap (hard cap: 30)
