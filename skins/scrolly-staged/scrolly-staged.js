@@ -175,7 +175,7 @@ export function createScrollyStagedSkin(ctx) {
   // ── DOM skeleton ──────────────────────────────────────────────────────────
   function buildHTML(panes) {
     var layers = LAYER_NAMES.map(function (name) {
-      return '<img class="sst-layer ' + name + '" data-layer="' + name + '" src="" alt="" />';
+      return '<img class="sst-layer ' + name + '" data-layer="' + name + '" alt="" />';
     }).join('\n      ');
 
     var paneHtml = panes.map(function (p, i) {
