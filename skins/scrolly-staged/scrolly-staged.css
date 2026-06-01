@@ -216,17 +216,29 @@
 }
 .sst-body p:last-child { margin-bottom: 0; }
 
-/* ── "Para saber mais" CTA layer (replaces innerDrawings when more asset exists) ── */
-.sst-layer.sst-cta {
-  mix-blend-mode: normal !important;  /* override screen blend */
-  z-index:        95 !important;      /* above canvas (80), vignette (90) */
-  cursor:         pointer;
-  object-fit:     contain;
-  filter:         none !important;    /* no blur/brightness/saturation filter */
-  border:         0;
-  outline:        none;
+/* ── "Para saber mais" CTA — fixed overlay above the stage, outside stacking context ── */
+/* Lives outside .sst-stage so no filter/stacking-context conflicts. */
+.sst-cta {
+  position:   fixed;
+  bottom:     8vh;
+  left:       50%;
+  transform:  translateX(-50%);
+  max-width:  min(640px, 90vw);
+  max-height: 40vh;
+  object-fit: contain;
+  cursor:     pointer;
+  opacity:    0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index:    200;
+  border:     0;
+  outline:    none;
 }
-.sst-layer.sst-cta:hover { opacity: 0.85 !important; }
+.sst-cta.sst-cta-visible {
+  opacity:        1;
+  pointer-events: auto;
+}
+.sst-cta.sst-cta-visible:hover { opacity: 0.85; }
 
 /* ── "Para saber mais" full-screen overlay ── */
 .sst-more-overlay {

@@ -196,6 +196,7 @@ export function createScrollyStagedSkin(ctx) {
         '<canvas id="sst-canvas"></canvas>' +
         '<div class="sst-vignette"></div>' +
       '</div>' +
+      '<img class="sst-cta" id="sst-cta" alt="" />' +
       '<div class="sst-text-track" aria-label="Narrativa">' +
         paneHtml +
       '</div>'
@@ -557,6 +558,8 @@ export function createScrollyStagedSkin(ctx) {
         panel.classList.remove("eg-hidden");
         panel.classList.remove("eg-minimized");
       }
+      var ctaEl = root.querySelector("#sst-cta");
+      if (ctaEl && ctaEl.src) ctaEl.classList.add("sst-cta-visible");
     }
 
     function tick() {
@@ -733,17 +736,16 @@ export function createScrollyStagedSkin(ctx) {
           if (url && el) el.src = url;
         });
 
-        // "Para saber mais" widget — replaces innerDrawings (slot 11) at the end.
+        // "Para saber mais" widget — appears at the end (scene 2), above the stage.
         // Image file (more.jpg/png/…) → full-screen image overlay on click.
         // HTML file or external URL → iframe overlay (same as standard scrolly).
         var moreUrl = assets["more"] || "";
         if (moreUrl) {
           var isImage = /\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(moreUrl);
-          var ctaEl   = layerEls["innerDrawings"];
+          var ctaEl   = root.querySelector("#sst-cta");
 
           if (ctaEl) {
             ctaEl.src = moreUrl;
-            ctaEl.classList.add("sst-cta");
           }
 
           var overlay = document.createElement("div");
