@@ -5,7 +5,7 @@ import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName
 import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=8";
 import { buildGraph, countRelations } from "./js/graph/builder.js?v=7";
 import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=6";
-import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=6";
+import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=8";
 import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=6";
 import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=6";
 import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=6";
