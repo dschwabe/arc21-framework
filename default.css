@@ -74,6 +74,8 @@ code {
   font-size: 0.92em;
 }
 .hidden { display: none !important; }
+/* Management-only elements: hidden in public mode, visible when <html data-mgmt> */
+html:not([data-mgmt]) .mgmt-only { display: none !important; }
 
 /* ---------- Topbar ---------- */
 .topbar {

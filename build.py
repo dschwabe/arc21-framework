@@ -204,6 +204,19 @@ def build_html(asset_paths):
 
 # ── Translation sync check ────────────────────────────────────────────────────
 
+
+def build_mgmt():
+    """Generate mgmt.html from index.html — never edit mgmt.html directly."""
+    import re as _re
+    html = read("index.html")
+    html = html.replace("<html ", "<html data-mgmt ", 1)
+    html = _re.sub(r"(<title>)(.*?)(</title>)", lambda m: m.group(1) + m.group(2) + " — Gestão" + m.group(3), html, count=1)
+    mgmt_path = os.path.join(BASE, "mgmt.html")
+    with open(mgmt_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print("mgmt.html    written")
+
+
 def check_translation_sync():
     """Warn if any translated XLSX is older than the source, or if translation
     cache files exist but are missing entries for the current source content.
@@ -282,4 +295,5 @@ if __name__ == "__main__":
         print(f"bundle.zip   written  ({zip_kb} KB)  [{count} asset files]")
         print(f"  → extract the zip, then open bundle.html from the extracted folder")
 
+    build_mgmt()
     check_translation_sync()
