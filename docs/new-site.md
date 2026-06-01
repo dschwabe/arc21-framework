@@ -201,3 +201,38 @@ README.md
 .gitignore
 CLAUDE.md           AI assistant instructions (create if desired)
 ```
+
+---
+
+## Public vs management HTML
+
+Every ARC21 site ships two HTML entry points:
+
+| File | URL | Purpose |
+|------|-----|---------|
+| `index.html` | `https://your-site.tld/` | **Public** — auto-loads the XLSX, no data management UI |
+| `mgmt.html` | `https://your-site.tld/mgmt.html` | **Management** — full file-picker, narrative import, loader card |
+
+Both are **site-owned** (never overwritten by sync) so you can customise the
+`<title>` tag and any other meta. Firebase Hosting serves static files before
+applying SPA rewrites, so no rewrite rule is needed for `mgmt.html`.
+
+### What is removed from `index.html`
+
+- "Trocar arquivo" topbar button and its hidden file input
+- Narrative import dialog (`#narrativeImportDialog`)
+- Hero loader card (manual XLSX/CSV file selection)
+- Hero "Trocar arquivo de dados" button
+- Data status `<div>`
+
+`app.js` null-checks every management button, so removing them from the HTML
+requires no JS changes.
+
+### Customising the title
+
+After your first sync copies `mgmt.html`, open it and update `<title>`:
+
+```html
+<!-- mgmt.html -->
+<title>My Site — Gestão</title>
+```

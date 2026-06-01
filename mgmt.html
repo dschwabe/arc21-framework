@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ARC21 Framework</title>
+  <title>ARC21 Framework — Management</title>
   <link rel="stylesheet" href="./default.css" />
   <link rel="stylesheet" href="site.css" />
 </head>
@@ -22,6 +22,8 @@
       <a href="#/" class="nav-link" data-i18n="nav.home">Home</a>
       <button id="backBtn" class="nav-button" type="button" data-i18n="nav.back">Voltar</button>
       <button id="historyBtn" class="nav-button" type="button" data-i18n="nav.history">Histórico</button>
+      <button id="changeSourceBtn" class="nav-button" type="button" title="Trocar arquivo de dados" data-i18n="nav.changeSource" data-i18n-title="nav.changeSource.title">Trocar arquivo</button>
+      <input id="changeSourceFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
       <select id="topSkinSelect" class="skin-select" aria-label="Skin da narrativa"></select>
       <select id="topLocaleSelect" class="locale-select" aria-label="Idioma" style="display:none"></select>
       <button id="helpBtn" class="nav-button" type="button" data-i18n="nav.help">Ajuda</button>
@@ -56,6 +58,30 @@
       </div>
     </form>
   </dialog>
+
+  <dialog id="narrativeImportDialog" class="dialog narrative-import-dialog">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2 data-i18n="dialog.narrativeImport.title">Importar narrativas</h2>
+        <button class="icon-button" value="close" aria-label="Fechar">×</button>
+      </div>
+      <div class="help-content">
+        <p>Selecione uma planilha XLSX com as abas <code>Narratives</code> e <code>Elements</code>. A aba <code>Elements</code> deve incluir <code>elementTitle</code>.</p>
+        <p>No formato consolidado <code>conceptual_graph.xlsx</code>, essas abas já vêm junto com <code>Concepts</code>, <code>Relations</code> e <code>Relation Types</code> — basta usar “Trocar arquivo” no topo.</p>
+        <div class="file-loader">
+          <button id="browseNarrativesBtn" class="primary" type="button" data-i18n="dialog.narrativeImport.browse">Selecionar arquivo de narrativas</button>
+          <input id="narrativesFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
+          <p id="selectedNarrativesFile" class="file-name" data-i18n="dialog.narrativeImport.noFile">Nenhum arquivo de narrativas selecionado.</p>
+        </div>
+        <div id="narrativeImportStatus" class="status"></div>
+      </div>
+      <div class="dialog-actions">
+        <button id="clearNarrativesBtn" class="secondary" type="button" data-i18n="dialog.narrativeImport.clear">Limpar narrativas</button>
+        <button class="primary" value="close" type="submit" data-i18n="common.close">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- ═══════════════════════════════════════════
        Narrative PiP Overlay — persistent frame
        States: (default hidden) · is-pip · is-full
@@ -111,11 +137,50 @@
 
             <div class="hero-actions">
               <a id="startLink" class="start-link disabled" href="#" aria-disabled="true">
-                A carregar…
+                Carregue um arquivo para começar
               </a>
+              <button id="heroChangeSourceBtn" class="nav-button open-change-source" type="button">Trocar arquivo de dados</button>
             </div>
+
+            <details class="loader-card hero-loader" id="heroLoaderCard">
+              <summary>Carregar manualmente um arquivo CSV ou XLSX</summary>
+
+              <label class="field">
+                <span>Caminho relativo do arquivo XLSX ou CSV, quando servido por HTTP local</span>
+                <input id="csvPathInput" type="text" value="data/conceptual_graph.xlsx" />
+              </label>
+              <button id="loadCsvPathBtn" class="primary" type="button">Carregar por caminho</button>
+
+              <div class="divider"><span>ou</span></div>
+
+              <div class="file-loader">
+                <p class="field-label">Selecionar arquivo XLSX ou CSV local</p>
+                <button id="browseCsvBtn" class="primary" type="button">Selecionar arquivo local</button>
+                <input id="csvFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
+                <p id="selectedCsvFile" class="file-name">Arquivo padrão esperado: <code>data/conceptual_graph.xlsx</code>.</p>
+                <p class="file-note">Por segurança, navegadores não permitem preencher automaticamente o valor de um campo de arquivo local.</p>
+              </div>
+
+              <div class="divider"><span>histórico</span></div>
+
+              <label class="file-field">
+                <span>Selecionar arquivo JSON de histórico salvo</span>
+                <input id="historyFileInput" type="file" accept=".json,application/json" />
+              </label>
+
+              <details class="note">
+                <summary>Observação sobre execução local</summary>
+                <p>
+                  Alguns navegadores bloqueiam <code>fetch()</code> de arquivos locais abertos com
+                  <code>file://</code>. Para carregar por caminho relativo, execute
+                  <code>python3 -m http.server</code> nesta pasta e abra
+                  <code>http://localhost:8000</code>. A opção “Selecionar arquivo local” funciona
+                  diretamente no navegador.
+                </p>
+              </details>
             </details>
 
+            <div id="dataStatus" class="status" aria-live="polite"></div>
           </div>
 
           <figure class="hero-diagram-frame" aria-label="Diagrama de alto nível do grafo conceitual">

@@ -23,7 +23,8 @@ SITE_OWNED = {
     "i18n",            # translation files (V6 only)
     "translate.py",    # translation script (V6 only)
     "help-config.json",# site-specific tooltip config
-    "index.html",      # site shell (title, meta tags)
+    "index.html",      # public shell (title, meta tags)
+    "mgmt.html",       # management shell (site-owned; customize title only)
     "README.md",
     ".gitignore",
     "sync.py",
