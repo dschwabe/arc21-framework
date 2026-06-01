@@ -268,17 +268,25 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       const summary = $("#datasetSummary");
       if (summary) {
         if (isLoaded) {
-          const label = (function(){ try { return localStorage.getItem(STORAGE_SOURCE_LABEL_KEY) || ""; } catch(e) { return ""; } })();
-          const narrativeCount = (appStore.narrativeStore && appStore.narrativeStore.order) ? appStore.narrativeStore.order.length : 0;
-          summary.innerHTML =
-            '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-ok">\u2713 Carregado</span>' +
-              (label ? ' <code>' + escapeHTML(label) + '</code>' : '') +
-            '</div>' +
-            '<div class="dataset-summary-stats">' +
-              '<span><strong>' + appStore.graph.order.length + '</strong> conceitos</span>' +
-              '<span><strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</span>' +
-              (narrativeCount ? '<span><strong>' + narrativeCount + '</strong> narrativa' + (narrativeCount === 1 ? '' : 's') + '</span>' : '') +
-            '</div>';
+          const isMgmt = document.documentElement.hasAttribute('data-mgmt');
+          if (isMgmt) {
+            const label = (function(){ try { return localStorage.getItem(STORAGE_SOURCE_LABEL_KEY) || ""; } catch(e) { return ""; } })();
+            const narrativeCount = (appStore.narrativeStore && appStore.narrativeStore.order) ? appStore.narrativeStore.order.length : 0;
+            summary.innerHTML =
+              '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-ok">\u2713 Carregado</span>' +
+                (label ? ' <code>' + escapeHTML(label) + '</code>' : '') +
+              '</div>' +
+              '<div class="dataset-summary-stats">' +
+                '<span><strong>' + appStore.graph.order.length + '</strong> conceitos</span>' +
+                '<span><strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</span>' +
+                (narrativeCount ? '<span><strong>' + narrativeCount + '</strong> narrativa' + (narrativeCount === 1 ? '' : 's') + '</span>' : '') +
+              '</div>';
+          } else {
+            summary.innerHTML =
+              '<p class="dataset-summary-public">Mapa conceitual carregado \u2014 ' +
+              '<strong>' + appStore.graph.order.length + '</strong> conceitos, ' +
+              '<strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</p>';
+          }
         } else {
           summary.innerHTML = '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-empty">Nenhum grafo carregado</span></div>';
         }

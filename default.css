@@ -286,6 +286,8 @@ html:not([data-mgmt]) .mgmt-only { display: none !important; }
   font-size: 0.92rem; color: var(--muted-2);
 }
 .dataset-summary-stats strong { color: var(--ink-strong); font-weight: 700; }
+.dataset-summary-public { margin: 0; font-size: 0.92rem; color: var(--muted-2); }
+.dataset-summary-public strong { color: var(--ink-strong); font-weight: 700; }
 
 .hero-actions {
   display: flex; flex-wrap: wrap; gap: 0.6rem;
