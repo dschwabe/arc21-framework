@@ -561,7 +561,10 @@ export function createScrollyStagedSkin(ctx) {
         panel.classList.remove("eg-minimized");
       }
       var ctaEl = document.getElementById("sst-cta");
-      if (ctaEl) ctaEl.classList.add("sst-cta-visible");
+      // Only make the CTA visible if a src was actually loaded (getAttribute reads the
+      // HTML attribute, which stays null/'' until asset loading sets it — unlike the .src
+      // property which returns the full page URL for an empty attribute).
+      if (ctaEl && ctaEl.getAttribute("src")) ctaEl.classList.add("sst-cta-visible");
     }
 
     function tick() {
