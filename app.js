@@ -244,6 +244,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     const dataStatus = $("#dataStatus");
 
     function updateStartLink() {
+      if (!startLink) return;
       const first = firstConceptSlug();
       if (first) {
         startLink.href = conceptUrl(first);
