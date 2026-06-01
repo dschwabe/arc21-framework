@@ -222,9 +222,11 @@
   z-index:        92;       /* above canvas (80) and vignette (90) */
   cursor:         pointer;
   object-fit:     contain;
-  filter: none;             /* override per-layer filter; let opacity/transform stay */
+  filter:         none;     /* override per-layer filter */
+  border:         0;        /* suppress browser default img border */
+  outline:        none;
 }
-.sst-layer.sst-cta:hover { opacity: 0.9 !important; }
+.sst-layer.sst-cta:hover { opacity: 0.85 !important; }
 
 /* ── "Para saber mais" full-screen overlay ── */
 .sst-more-overlay {
@@ -244,7 +246,6 @@
   align-items: center;
   justify-content: flex-end;
   padding: 0 16px;
-  border-bottom: 1px solid rgba(200, 155, 110, 0.15);
 }
 .sst-more-close {
   background: none;
