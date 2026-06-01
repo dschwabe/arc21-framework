@@ -49,7 +49,7 @@ export function ensureSkinCSS(skinID) {
   var link = document.createElement("link");
   link.id   = cssId;
   link.rel  = "stylesheet";
-  link.href = "skins/" + skinID + "/" + skinID + ".css?v=2";
+  link.href = "skins/" + skinID + "/" + skinID + ".css?v=4";
   document.head.appendChild(link);
 }
 
@@ -70,7 +70,7 @@ export async function getSkinInstance(skinID, ctx) {
   if (_skinInstances[skinID]) return _skinInstances[skinID];
   ensureSkinCSS(skinID);
   // Dynamic import path is relative to this module: ../../skins/<id>/<id>.js
-  const mod = await import("../../skins/" + skinID + "/" + skinID + ".js");
+  const mod = await import("../../skins/" + skinID + "/" + skinID + ".js?v=4");
   // Convert hyphenated IDs to PascalCase: "concept-default" → "ConceptDefault"
   const pascal = skinID.replace(/-([a-z])/g, function(_, c) { return c.toUpperCase(); });
   const factoryName = "create" + pascal.charAt(0).toUpperCase() + pascal.slice(1) + "Skin";

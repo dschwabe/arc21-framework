@@ -196,7 +196,6 @@ export function createScrollyStagedSkin(ctx) {
         '<canvas id="sst-canvas"></canvas>' +
         '<div class="sst-vignette"></div>' +
       '</div>' +
-      '<img class="sst-cta" id="sst-cta" alt="" />' +
       '<div class="sst-text-track" aria-label="Narrativa">' +
         paneHtml +
       '</div>'
@@ -558,8 +557,8 @@ export function createScrollyStagedSkin(ctx) {
         panel.classList.remove("eg-hidden");
         panel.classList.remove("eg-minimized");
       }
-      var ctaEl = root.querySelector("#sst-cta");
-      if (ctaEl) ctaEl.classList.add("sst-cta-visible"); // src may still be loading; img is invisible without src anyway
+      var ctaEl = document.getElementById("sst-cta");
+      if (ctaEl) ctaEl.classList.add("sst-cta-visible");
     }
 
     function tick() {
@@ -667,6 +666,15 @@ export function createScrollyStagedSkin(ctx) {
     app.appendChild(root);
     window.scrollTo(0, 0);
 
+    // CTA element — appended to body so position:fixed is always viewport-relative.
+    // src is set later by loadSkinAssets; element is hidden until revealEG() fires.
+    var ctaImg = document.createElement("img");
+    ctaImg.id        = "sst-cta";
+    ctaImg.className = "sst-cta";
+    ctaImg.alt       = "";
+    document.body.appendChild(ctaImg);
+    _cleanupFns.push(function () { ctaImg.remove(); });
+
     // Collect layer elements (src will be set once assets load)
     var layerEls = {};
     LAYER_NAMES.forEach(function (name) {
@@ -742,10 +750,15 @@ export function createScrollyStagedSkin(ctx) {
         var moreUrl = assets["more"] || "";
         if (moreUrl) {
           var isImage = /\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(moreUrl);
-          var ctaEl   = root.querySelector("#sst-cta");
-
+          var ctaEl   = document.getElementById("sst-cta");
           if (ctaEl) {
             ctaEl.src = moreUrl;
+            // If revealEG already fired before assets loaded, make visible now
+            if (ctaEl.classList.contains("sst-cta-visible") === false &&
+                document.getElementById("eg-panel") &&
+                !document.getElementById("eg-panel").classList.contains("eg-hidden")) {
+              ctaEl.classList.add("sst-cta-visible");
+            }
           }
 
           var overlay = document.createElement("div");
