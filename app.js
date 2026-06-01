@@ -1074,8 +1074,17 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
         return { id: s.skinID, name: s.skinName || s.skinID,
                  isActive: s.skinID === activeSkinID || (s.skinImplID || "concept-default") === activeSkinID };
       });
-    } else if (globalSkins && globalSkins.length >= 2) {
-      options = globalSkins.map(function (s) {
+    } else if (globalSkins && globalSkins.length >= 1) {
+      // Only include skins that need no external config, or that are already
+      // configured for this specific concept in the Concept Skins sheet.
+      const filtered = globalSkins.filter(function (s) {
+        if (!s.dataContract || !s.dataContract.type) return true;
+        return perConcept.some(function (pc) {
+          return pc.skinImplID === s.id || pc.skinID === s.id;
+        });
+      });
+      if (filtered.length < 2) return "";
+      options = filtered.map(function (s) {
         return { id: s.id, name: s.name || s.id, isActive: s.id === activeSkinID };
       });
     } else {
@@ -1110,8 +1119,13 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       topSel.value = active ? active.skinID : (perConcept[0] && perConcept[0].skinID) || "";
     } else {
       const index = await loadSkinIndex();
+      const perConcept2 = getConceptSkins(conceptID);
       const globalConceptSkins = (index && index.skins || []).filter(function (s) {
-        return s.scope && s.scope.indexOf("concept") >= 0;
+        if (!s.scope || s.scope.indexOf("concept") < 0) return false;
+        if (!s.dataContract || !s.dataContract.type) return true;
+        return perConcept2.some(function (pc) {
+          return pc.skinImplID === s.id || pc.skinID === s.id;
+        });
       });
       globalConceptSkins.forEach(function (s) {
         var opt = document.createElement("option");
