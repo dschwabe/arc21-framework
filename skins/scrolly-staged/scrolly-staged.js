@@ -732,6 +732,44 @@ export function createScrollyStagedSkin(ctx) {
           var el  = layerEls[name];
           if (url && el) el.src = url;
         });
+
+        // "Para saber mais" widget — replaces innerDrawings (slot 11) at the end.
+        // Image file (more.jpg/png/…) → full-screen image overlay on click.
+        // HTML file or external URL → iframe overlay (same as standard scrolly).
+        var moreUrl = assets["more"] || "";
+        if (moreUrl) {
+          var isImage = /\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(moreUrl);
+          var ctaEl   = layerEls["innerDrawings"];
+
+          if (ctaEl) {
+            ctaEl.src = moreUrl;
+            ctaEl.classList.add("sst-cta");
+          }
+
+          var overlay = document.createElement("div");
+          overlay.className = "sst-more-overlay";
+          overlay.hidden = true;
+          overlay.innerHTML =
+            '<div class="sst-more-bar">' +
+              '<button class="sst-more-close" type="button" aria-label="Fechar">×</button>' +
+            '</div>' +
+            (isImage
+              ? '<img class="sst-more-img" src="' + moreUrl + '" alt="">'
+              : '<iframe class="sst-more-frame" src="" scrolling="yes" frameborder="0"></iframe>');
+          document.body.appendChild(overlay);
+
+          function openMore() {
+            if (!isImage && overlay.querySelector("iframe").getAttribute("src") !== moreUrl) {
+              overlay.querySelector("iframe").src = moreUrl;
+            }
+            overlay.hidden = false;
+          }
+          function closeMore() { overlay.hidden = true; }
+
+          overlay.querySelector(".sst-more-close").addEventListener("click", closeMore);
+          if (ctaEl) ctaEl.addEventListener("click", openMore);
+          _cleanupFns.push(function () { overlay.remove(); });
+        }
       } catch (_) {}
     })();
   }

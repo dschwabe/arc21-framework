@@ -216,6 +216,64 @@
 }
 .sst-body p:last-child { margin-bottom: 0; }
 
+/* ── "Para saber mais" CTA layer (replaces innerDrawings when more asset exists) ── */
+.sst-layer.sst-cta {
+  mix-blend-mode: normal;   /* override screen — show image as-is */
+  z-index:        92;       /* above canvas (80) and vignette (90) */
+  cursor:         pointer;
+  object-fit:     contain;
+  filter: none;             /* override per-layer filter; let opacity/transform stay */
+}
+.sst-layer.sst-cta:hover { opacity: 0.9 !important; }
+
+/* ── "Para saber mais" full-screen overlay ── */
+.sst-more-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  background: rgba(7, 7, 16, 0.94);
+  display: flex;
+  flex-direction: column;
+}
+.sst-more-overlay[hidden] { display: none; }
+
+.sst-more-bar {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(200, 155, 110, 0.15);
+}
+.sst-more-close {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 200ms, color 200ms;
+}
+.sst-more-close:hover { border-color: var(--sst-accent, #c89b6e); color: var(--sst-accent, #c89b6e); }
+
+.sst-more-img {
+  flex: 1;
+  min-height: 0;
+  object-fit: contain;
+  width: 100%;
+  padding: 1rem;
+}
+.sst-more-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
 /* ── Wikilinks ────────────────────────────────────────────── */
 .sst-wikilink {
   color:           var(--sst-accent);
