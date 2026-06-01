@@ -182,6 +182,30 @@ The `egMode` column in the **Narrative Skins** and **Concept Skins** XLSX sheets
 overrides the skin-type default for a specific skin assignment. Valid values:
 `hidden`, `minimized`, `normal`.
 
+### Node interaction
+
+Nodes support two interaction modes that the user switches between:
+
+| Mode | How to enter | How to exit | Cursor |
+|------|-------------|-------------|--------|
+| **Navigation** (default) | — | — | `pointer` |
+| **Reposition** | Hold any node ≥ 400 ms | Click SVG background | `grab` / `grabbing` |
+
+In navigation mode a tap/click on a node navigates to that concept.
+In reposition mode dragging any node repositions it within the SVG; the
+viewBox auto-adjusts to keep all nodes in view. Positions reset when a
+new concept is visited.
+
+### Panel controls
+
+| Control | Location | Action |
+|---------|----------|--------|
+| Title bar drag | Drag anywhere on bar | Move the panel |
+| NW resize handle | Top-left corner | Resize (right/bottom edges stay fixed) |
+| SE resize handle | Bottom-right corner | Resize (left/top edges stay fixed) |
+| Expand button | Top-right (⤢) | Toggle 90 vw × 90 vh large mode |
+| Close button | Top-right (×) | Hide panel |
+
 ### Public API
 
 ```js

@@ -1543,6 +1543,8 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   display: block;
   width: 100%;
   height: 100%;
+  touch-action: none;
+  user-select: none;
 }
 
 /* ── Edges ── */
@@ -1572,7 +1574,9 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 }
 
 /* ── Nodes ── */
-.eg-node-g { cursor: pointer; }
+.eg-node-g                   { cursor: pointer;  }  /* normal: tap to navigate */
+.eg-edit-mode .eg-node-g     { cursor: grab;     }  /* edit mode: hold to reposition */
+.eg-node-dragging .eg-node-g { cursor: grabbing; }  /* actively dragging */
 
 /* Visited (navigated) nodes — dark blue tint */
 .eg-box {
@@ -1649,16 +1653,45 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 
 /* ── Minimized state: title bar only ── */
 .eg-minimized .eg-body,
-.eg-minimized .eg-resize-handle { display: none; }
+.eg-minimized .eg-resize-handle,
+.eg-minimized .eg-resize-nw { display: none; }
 .eg-minimized { min-height: 0; height: auto !important; }
 
-/* ── Resize handle ── */
+/* ── NW resize handle (top-left, mirrors SE) ── */
+.eg-resize-nw {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nesw-resize;
+  z-index: 10;
+  opacity: 0.70;
+  border-radius: 8px 0 0 0;
+  transform: rotate(180deg);
+  background:
+    linear-gradient(135deg,
+      transparent 30%,
+      rgba(180,210,255,0.85) 30%, rgba(180,210,255,0.85) 40%,
+      transparent 40%,
+      transparent 55%,
+      rgba(180,210,255,0.85) 55%, rgba(180,210,255,0.85) 65%,
+      transparent 65%,
+      transparent 80%,
+      rgba(180,210,255,0.85) 80%, rgba(180,210,255,0.85) 90%,
+      transparent 90%
+    );
+  transition: opacity .15s;
+}
+.eg-resize-nw:hover { opacity: 1.0; }
+
+/* ── SE resize handle (bottom-right) ── */
 .eg-resize-handle {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: nwse-resize;
   z-index: 10;
   opacity: 0.70;
