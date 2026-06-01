@@ -1049,12 +1049,13 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
   //   4. "concept-default" fallback
   async function _resolveConceptSkin(conceptID, querySkin) {
     if (querySkin) {
-      const skin = resolveConceptSkin(conceptID, querySkin);
-      if (skin) return skin.skinImplID || "concept-default";
-      // querySkin might be a direct skin impl ID in the global index
+      // Check global index first so direct impl IDs (e.g. "concept-default",
+      // "scrolly-staged") are honoured before falling back to stored skins.
       const idx = await loadSkinIndex();
       const globalSkin = (idx && idx.skins || []).find(function (s) { return s.id === querySkin; });
       if (globalSkin) return querySkin;
+      const skin = resolveConceptSkin(conceptID, querySkin);
+      if (skin) return skin.skinImplID || "concept-default";
     }
     const def = getDefaultConceptSkin(conceptID);
     if (def) return def.skinImplID || "concept-default";
