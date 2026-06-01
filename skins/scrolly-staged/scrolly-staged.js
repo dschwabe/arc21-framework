@@ -332,7 +332,7 @@ export function createScrollyStagedSkin(ctx) {
               opacity = SCENE_STATES[1].metadataDots       * stagedOp(t, 0.62, 0.70, 0.76, 0.82);
             if (name === "digitalDouble")  opacity = 1.00 * ramp(t, 0.80, 0.86);
             if (name === "privacyMembrane") opacity = 0.95 * ramp(t, 0.84, 0.90);
-            if (name === "innerDrawings")  opacity = 0.50 * ramp(t, 0.94, 1.00);
+            if (name === "innerDrawings")  opacity = 0; // CTA only appears in scene 2
           }
 
           if (fromIdx === 1 && toIdx === 2) {
@@ -343,7 +343,7 @@ export function createScrollyStagedSkin(ctx) {
               opacity = 0;
             if (name === "digitalDouble")    opacity = 1.00 * (1 - ramp(t, 0.00, 0.16));
             if (name === "privacyMembrane")  opacity = 0.95 * (1 - ramp(t, 0.00, 0.16));
-            if (name === "innerDrawings")    opacity = 0.50; // already pre-appeared at end of scene 1
+            if (name === "innerDrawings")    opacity = 0.50 * ramp(t, 0.00, 0.25); // fade in at scene 2 start
           }
         }
 

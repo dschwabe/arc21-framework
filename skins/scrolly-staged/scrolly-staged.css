@@ -218,12 +218,12 @@
 
 /* ── "Para saber mais" CTA layer (replaces innerDrawings when more asset exists) ── */
 .sst-layer.sst-cta {
-  mix-blend-mode: normal;   /* override screen — show image as-is */
-  z-index:        92;       /* above canvas (80) and vignette (90) */
+  mix-blend-mode: normal !important;  /* override screen blend */
+  z-index:        95 !important;      /* above canvas (80), vignette (90) */
   cursor:         pointer;
   object-fit:     contain;
-  filter:         none;     /* override per-layer filter */
-  border:         0;        /* suppress browser default img border */
+  filter:         none !important;    /* no blur/brightness/saturation filter */
+  border:         0;
   outline:        none;
 }
 .sst-layer.sst-cta:hover { opacity: 0.85 !important; }
