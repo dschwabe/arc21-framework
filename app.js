@@ -1120,6 +1120,9 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       loadHelpConfig:      loadHelpConfig,
       applyTooltips:       applyTooltips,
       loadSkinAssets:      loadSkinAssets,
+      autoMediaType:       _autoMediaType,
+      mediaFilePath:       mediaFilePath,
+      getMediaFor:         getMediaFor,
       t:                   t,
       applyI18n:           applyI18n,
     };
