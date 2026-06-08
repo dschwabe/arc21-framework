@@ -265,6 +265,13 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       const isLoaded = !!(appStore.graph && appStore.graph.order && appStore.graph.order.length);
       heroCard.classList.toggle("is-loaded", isLoaded);
       heroCard.classList.toggle("is-empty", !isLoaded);
+      // Apply site-specific lede text from siteConfig (set by XLSX Site sheet).
+      var _sc = {};
+      try { var _r = localStorage.getItem('conceptGraph.siteConfig.v1'); if (_r) _sc = JSON.parse(_r); } catch(e) {}
+      var ledeEl = $("#heroLede");
+      if (ledeEl && _sc['hero.lede']) ledeEl.textContent = _sc['hero.lede'];
+      var eyebrowEl = $("#heroEyebrow");
+      if (eyebrowEl && _sc['hero.eyebrow']) eyebrowEl.textContent = _sc['hero.eyebrow'];
       const summary = $("#datasetSummary");
       if (summary) {
         if (isLoaded) {
@@ -283,8 +290,8 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
               '</div>';
           } else {
             summary.innerHTML =
-              '<p class="dataset-summary-public">Mapa conceitual carregado \u2014 ' +
-              '<strong>' + appStore.graph.order.length + '</strong> conceitos, ' +
+              '<p class="dataset-summary-public">' +
+              '<strong>' + appStore.graph.order.length + '</strong> constela\u00e7\u00f5es (grupos de conceitos) e ' +
               '<strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</p>';
           }
         } else {
@@ -807,15 +814,33 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
   const _VIM_RE  = /vimeo\.com\/(\d+)/;
   const _VID_EXT = /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i;
 
-  function _ytId(url)          { const m = _YT_RE.exec(url);  return m ? m[1] : null; }
-  function _vimeoId(url)       { const m = _VIM_RE.exec(url); return m ? m[1] : null; }
-  function _isDirectVideo(url) { return _VID_EXT.test(url) || (!_ytId(url) && !_vimeoId(url) && !/^https?:\/\//i.test(url)); }
+  const _IG_RE  = /instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/;
+  const _TT_RE  = /tiktok\.com\/@[^/]+\/video\/(\d+)/;
+
+  function _ytId(url)    { const m = _YT_RE.exec(url);  return m ? m[1] : null; }
+  function _vimeoId(url) { const m = _VIM_RE.exec(url); return m ? m[1] : null; }
+  function _igId(url)    { const m = _IG_RE.exec(url);  return m ? { type: m[1], id: m[2] } : null; }
+  function _ttId(url)    { const m = _TT_RE.exec(url);  return m ? m[1] : null; }
+
+  // Detect media type from URL/path syntax.
+  // Returns "video" for all video sources (platform or local file); "image" otherwise.
+  function _autoMediaType(url) {
+    if (!url) return "image";
+    if (_YT_RE.test(url) || _VIM_RE.test(url)) return "video";
+    if (_IG_RE.test(url) || _TT_RE.test(url))  return "video";
+    if (_VID_EXT.test(url)) return "video";
+    return "image";
+  }
 
   function _platformEmbedUrl(url) {
     const yt = _ytId(url);
     if (yt)  return "https://www.youtube-nocookie.com/embed/" + yt + "?rel=0";
     const vi = _vimeoId(url);
     if (vi)  return "https://player.vimeo.com/video/" + vi;
+    const ig = _igId(url);
+    if (ig)  return "https://www.instagram.com/" + ig.type + "/" + ig.id + "/embed/";
+    const tt = _ttId(url);
+    if (tt)  return "https://www.tiktok.com/embed/v2/" + tt;
     return null;
   }
 
@@ -849,10 +874,40 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     const arStyle = ar ? ' style="aspect-ratio:' + ar + '"' : "";
 
     if (type === "video") {
-      const rawSrc    = mediaFilePath(scope, scopeID, it);
-      const embedUrl  = _platformEmbedUrl(rawSrc);
+      const rawSrc = mediaFilePath(scope, scopeID, it);
+
+      // Instagram: Meta blocks all third-party iframe embedding.
+      // Always render as a link card.
+      const ig = _igId(rawSrc);
+      if (ig) {
+        const igUrl   = "https://www.instagram.com/" + ig.type + "/" + ig.id + "/";
+        const igLabel = escapeHTML(it.caption || it.alt || "Ver no Instagram");
+        return '<div class="gallery-slot gallery-slot--platform-card gallery-slot--ig"'
+          + ' data-index="' + i + '"' + arStyle + hidden + '>'
+          + '<a href="' + escapeAttr(igUrl) + '" target="_blank" rel="noopener" class="platform-card-link">'
+          + '<svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">'
+          + '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>'
+          + '<circle cx="12" cy="12" r="4"/>'
+          + '<circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>'
+          + '</svg>'
+          + '<span class="platform-card-label">' + igLabel + '</span>'
+          + '</a></div>';
+      }
+
+      const embedUrl = _platformEmbedUrl(rawSrc);
       if (embedUrl) {
-        // Platform embed (YouTube / Vimeo)
+        // YouTube: click-to-play poster (avoids localhost/privacy-browser blocks).
+        // Clicking swaps the poster for the live iframe with autoplay.
+        const yt = _ytId(rawSrc);
+        if (yt) {
+          const thumb = "https://img.youtube.com/vi/" + yt + "/mqdefault.jpg";
+          return '<div class="gallery-slot gallery-slot--video gallery-slot--yt-poster"'
+            + ' data-index="' + i + '" data-embed="' + escapeAttr(embedUrl + "&autoplay=1") + '"' + arStyle + hidden + '>'
+            + '<img src="' + escapeAttr(thumb) + '" alt="' + alt + '" class="yt-poster-img">'
+            + '<button class="yt-play-btn" aria-label="Reproduzir vídeo" type="button">&#9654;</button>'
+            + '</div>';
+        }
+        // Vimeo / TikTok: direct iframe embed
         return '<div class="gallery-slot gallery-slot--video gallery-slot--embed"'
           + ' data-index="' + i + '"' + arStyle + hidden + '>'
           + '<iframe src="' + escapeAttr(embedUrl) + '"'
@@ -973,6 +1028,25 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     const sourceTitleEl = inner.querySelector(".gallery-source-title");
     const captionEl     = inner.querySelector(".gallery-caption-text");
     const link          = inner.querySelector(".gallery-source-link");
+
+    // YouTube click-to-play: swap poster div for live iframe on click.
+    slotEls.forEach(function (el) {
+      if (!el.classList.contains("gallery-slot--yt-poster")) return;
+      el.addEventListener("click", function () {
+        const embedUrl = el.getAttribute("data-embed");
+        if (!embedUrl) return;
+        const iframe = document.createElement("iframe");
+        iframe.src = embedUrl;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        iframe.frameBorder = "0";
+        iframe.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:none;display:block;";
+        el.innerHTML = "";
+        el.appendChild(iframe);
+        el.classList.remove("gallery-slot--yt-poster");
+        el.classList.add("gallery-slot--embed");
+      });
+    });
 
     // Broken-image fallback: replace with iframe for HTTP image URLs only.
     slotEls.forEach(function (el, idx) {
@@ -1118,6 +1192,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     topSel.innerHTML = "";
     const perConcept = getConceptSkins(conceptID);
     if (perConcept.length >= 2) {
+      topSel.style.display = "";
       perConcept.forEach(function (s) {
         var opt = document.createElement("option");
         opt.value = s.skinID;
@@ -1136,6 +1211,13 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           return pc.skinImplID === s.id || pc.skinID === s.id;
         });
       });
+      // Only show the selector when there are genuine alternatives.
+      if (globalConceptSkins.length <= 1) {
+        topSel.innerHTML = "";
+        topSel.style.display = "none";
+        return;
+      }
+      topSel.style.display = "";
       globalConceptSkins.forEach(function (s) {
         var opt = document.createElement("option");
         opt.value = s.id;
@@ -1240,6 +1322,9 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     el.className = "n-overlay";
     _nState = "hidden";
     _nID = null;
+    // Remove any narrative skin class so the rest of the UI is not
+    // affected by skin-specific body styles after the overlay closes.
+    activateSkin("linear");
   }
 
   function _nUpdateBar() {
@@ -1434,12 +1519,28 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           var max = scroller.scrollHeight - scroller.clientHeight;
           fill.style.width = (max > 0 ? (scroller.scrollTop / max * 100).toFixed(1) : 0) + "%";
         }
-        if (_nMode === "scrolly" && !_egRevealedAtScrollEnd) {
+        if ((_nMode === "scrolly" || _nMode === "scrolly-grammar-iv") && !_egRevealedAtScrollEnd) {
           var narrative = _nID && getNarrative(_nID);
           var elems = narrative && narrative.elements ? narrative.elements : [];
           if (elems.length > 0) {
-            var lastSec = document.getElementById("scrolly-" + elems[elems.length - 1]);
-            if (lastSec && lastSec.getBoundingClientRect().top < scroller.clientHeight * 0.55) {
+            var lastElemID = elems[elems.length - 1];
+            var lastSec = document.getElementById("scrolly-" + lastElemID)
+                       || document.getElementById("giv-e-" + lastElemID);
+            var triggered = false;
+            if (_nMode === "scrolly-grammar-iv") {
+              // Dual check for reliability across desktop and mobile:
+              // (a) scroll position: generous 300px tolerance covers mobile
+              //     address-bar height changes and iOS momentum scroll quirks;
+              // (b) last section visible: getBoundingClientRect works correctly
+              //     on mobile even when scrollTop is not fully accurate.
+              var maxScroll = scroller.scrollHeight - scroller.clientHeight;
+              var scrollCheck = maxScroll > 0 && scroller.scrollTop >= maxScroll - 300;
+              var visCheck = lastSec && lastSec.getBoundingClientRect().top < window.innerHeight * 0.85;
+              triggered = scrollCheck || visCheck;
+            } else if (lastSec) {
+              triggered = lastSec.getBoundingClientRect().top < scroller.clientHeight * 0.55;
+            }
+            if (triggered) {
               _egRevealedAtScrollEnd = true;
               egSetMode("normal");
             }
@@ -1509,6 +1610,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
         ls.renderStart(narrativeID);
       },
       loadSkinAssets:             loadSkinAssets,
+      autoMediaType:              _autoMediaType,
       getMediaFor:                getMediaFor,
       mediaFilePath:              mediaFilePath,
       minimizeNarrativeOverlay:   minimizeNarrativeOverlay,
@@ -1584,7 +1686,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     // Apply EG visibility. Explicit egMode on the skin entry wins;
     // otherwise scrolly defaults to hidden, linear to normal.
     const egMode = (activeSkin && activeSkin.egMode) ||
-                   (implID === "scrolly" ? "hidden" : "normal");
+                   ((implID === "scrolly" || implID === "scrolly-grammar-iv") ? "hidden" : "normal");
     _egRevealedAtScrollEnd = false;
     egSetMode(egMode);
     try {
@@ -1691,6 +1793,28 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     appStore.currentConceptSlug = null; renderHero();
   }
 
+  // ── Sobre dialog ────────────────────────────────────────────────────
+  function openSobre() {
+    var sobreDialog = document.getElementById("sobreDialog");
+    if (!sobreDialog || typeof sobreDialog.showModal !== "function") return;
+    // Apply theme colours as inline styles so they win over the browser's
+    // UA default (which forces Canvas / white on <dialog> elements).
+    var rs = getComputedStyle(document.documentElement);
+    sobreDialog.style.background = rs.getPropertyValue("--paper").trim() || "#080b0e";
+    sobreDialog.style.color      = rs.getPropertyValue("--ink").trim()   || "#e8e4e0";
+    var bodyEl = document.getElementById("sobreBody");
+    if (bodyEl) {
+      var html = t("sobre.body", "");
+      bodyEl.innerHTML = html;
+    }
+    var titleEl = document.getElementById("sobreDialogTitle");
+    if (titleEl) {
+      var title = t("sobre.title", null);
+      if (title !== null) titleEl.textContent = title;
+    }
+    sobreDialog.showModal();
+  }
+
   function installGlobalHandlers() {
     const historyBtn = $("#historyBtn");
     const backBtn = $("#backBtn");
@@ -1700,7 +1824,23 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     const historyList = $("#historyList");
     const helpBtn = $("#helpBtn");
     const helpDialog = $("#helpDialog");
+    const sobreDialog = $("#sobreDialog");
+    const sobreBtn = $("#sobreBtn");
+    const sobreCloseBtn = $("#sobreCloseBtn");
+    const brandLogoBtn = $("#brandLogoBtn");
     const narrativeImportDialog = $("#narrativeImportDialog");
+
+    // Sobre button + logo → open panel
+    if (sobreBtn) sobreBtn.addEventListener("click", openSobre);
+    if (brandLogoBtn) brandLogoBtn.addEventListener("click", openSobre);
+    if (sobreCloseBtn) sobreCloseBtn.addEventListener("click", function() {
+      if (sobreDialog) sobreDialog.close();
+    });
+    if (sobreDialog) {
+      sobreDialog.addEventListener("click", function(e) {
+        if (e.target === sobreDialog) sobreDialog.close();
+      });
+    }
     const browseNarrativesBtn = $("#browseNarrativesBtn");
     const narrativesFileInput = $("#narrativesFileInput");
     const selectedNarrativesFile = $("#selectedNarrativesFile");
@@ -1828,12 +1968,77 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     app.innerHTML = '<section class="hero"><div class="hero-card"><p class="eyebrow">Erro de inicialização</p><h1>O site não conseguiu iniciar</h1><div class="error-box"><strong>Problema:</strong> ' + escapeHTML(message) + '<br><strong>Como corrigir:</strong> Recarregue a página. Se continuar, abra o Console do navegador, copie o erro e verifique se os arquivos index.html, app.js e default.css estão na mesma pasta.<br><br><code>' + escapeHTML(error && (error.stack || error.message || error)) + '</code></div></div></section>';
   }
 
+  // Apply a parsed result object (from JSON or XLSX) to the app stores.
+  function applyParsedResult(result, usedPath) {
+    const lsk = localeSK(getLocale());
+    appStore.graph = buildGraph(result.rows);
+    saveStoredGraph(appStore.graph, lsk.data);
+    try { localStorage.setItem(STORAGE_SOURCE_LABEL_KEY, usedPath); } catch (e) {}
+    if (result.siteConfig && Object.keys(result.siteConfig).length) {
+      try { localStorage.setItem('conceptGraph.siteConfig.v1', JSON.stringify(result.siteConfig)); } catch (e) {}
+    }
+    saveStoredMedia(result.media || {}, lsk.media);
+    saveStoredTemplates(result.templates || {}, lsk.templates);
+    saveStoredNarrativeSkins(result.narrativeSkins || {}, lsk.skins);
+    saveStoredConceptSkins(result.conceptSkins || {}, lsk.conceptSkins);
+    saveStoredConceptTexts(result.conceptTexts || {}, lsk.conceptTexts);
+    saveStoredSkinData(result.skinData || {}, lsk.skinData);
+    if (result.narratives && result.narratives.order && result.narratives.order.length) {
+      saveStoredNarratives(result.narratives, lsk.narratives);
+    }
+  }
+
+  // Try to load data/graph.json (fast path — no SheetJS parsing needed).
+  // In local dev (python http.server) also checks XLSX Last-Modified header;
+  // if XLSX is newer the JSON is stale and we fall back to XLSX.
+  // Returns true on success, false if JSON is absent or stale.
+  async function tryLoadFromJson() {
+    const jsonPath = "data/graph.json";
+    try {
+      const res = await fetch(jsonPath, { cache: "no-store" });
+      if (!res.ok) return false;
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
+      if (ct.startsWith("text/html")) return false; // SPA rewrite
+      const result = await res.json();
+      if (!result || !Array.isArray(result.rows) || !result.rows.length) return false;
+
+      // Dev-mode staleness check: compare _xlsxMtime in JSON vs XLSX Last-Modified header.
+      // Only runs when XLSX is also served locally (python http.server returns Last-Modified).
+      if (result._xlsxMtime) {
+        try {
+          const xlsxRes = await fetch("data/conceptual_graph.xlsx", { method: "HEAD", cache: "no-store" });
+          const xlsxCt = (xlsxRes.headers.get("content-type") || "").toLowerCase();
+          if (xlsxRes.ok && !xlsxCt.startsWith("text/html")) { // ignore SPA rewrites
+            const xlsxLastMod = xlsxRes.headers.get("Last-Modified");
+            if (xlsxLastMod) {
+              const xlsxDate = new Date(xlsxLastMod);
+              const jsonDate = new Date(result._xlsxMtime);
+              if (xlsxDate > jsonDate) {
+                console.warn("[arc21] graph.json is stale (XLSX newer by " +
+                  Math.round((xlsxDate - jsonDate) / 1000) + "s) — falling back to XLSX parse.");
+                return false;
+              }
+            }
+          }
+        } catch (_) { /* HEAD failed — treat JSON as current */ }
+      }
+
+      applyParsedResult(result, jsonPath);
+      console.info("[arc21] Loaded from graph.json (_generated: " + (result._generated || "?") + ")");
+      return true;
+    } catch (err) {
+      console.warn("[arc21] graph.json load failed:", err);
+      return false;
+    }
+  }
+
   // Try to load the bundled conceptual_graph.xlsx at startup.
   // Silent on failure (e.g. file:// protocol, missing file).
   async function tryAutoloadDefaultData() {
-    if (appStore.graph && appStore.graph.order && appStore.graph.order.length) return false;
     if (location.protocol === "file:") return false;
-    // Try locale-specific path first, then the generic fallback.
+    // Fast path: pre-converted JSON (no SheetJS overhead, smaller download).
+    if (await tryLoadFromJson()) return true;
+    // Fallback: parse XLSX directly. Also fires when JSON is stale (dev mode).
     const paths = graphPaths(getLocale());
     let buffer = null;
     let usedPath = null;
@@ -1850,25 +2055,10 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     }
     if (!buffer) return false;
     try {
-      const lsk = localeSK(getLocale());
       const _idx = await loadSkinIndex();
       const _sc = (_idx && _idx.skins || []).map(function (s) { return s.dataContract; }).filter(Boolean);
       const result = await parseCombinedWorkbook(buffer, { skinContracts: _sc });
-      appStore.graph = buildGraph(result.rows);
-      saveStoredGraph(appStore.graph, lsk.data);
-      try { localStorage.setItem(STORAGE_SOURCE_LABEL_KEY, usedPath); } catch (e) {}
-      if (result.siteConfig && Object.keys(result.siteConfig).length) {
-        try { localStorage.setItem('conceptGraph.siteConfig.v1', JSON.stringify(result.siteConfig)); } catch (e) {}
-      }
-      saveStoredMedia(result.media || {}, lsk.media);
-      saveStoredTemplates(result.templates || {}, lsk.templates);
-      saveStoredNarrativeSkins(result.narrativeSkins || {}, lsk.skins);
-      saveStoredConceptSkins(result.conceptSkins || {}, lsk.conceptSkins);
-      saveStoredConceptTexts(result.conceptTexts || {}, lsk.conceptTexts);
-      saveStoredSkinData(result.skinData || {}, lsk.skinData);
-      if (result.narratives && result.narratives.order && result.narratives.order.length) {
-        saveStoredNarratives(result.narratives, lsk.narratives);
-      }
+      applyParsedResult(result, usedPath);
       return true;
     } catch (err) {
       console.warn("Autoload de " + usedPath + " falhou:", err);

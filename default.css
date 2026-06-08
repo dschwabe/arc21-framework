@@ -93,8 +93,60 @@ html:not([data-mgmt]) .mgmt-only { display: none !important; }
   width: 10.5rem; height: 3rem;
   filter: drop-shadow(0 0 14px var(--accent-soft));
   text-decoration: none;
+  /* button reset — transparent so topbar bg shows through */
+  border: 0; background: transparent; padding: 0; cursor: pointer;
+  color: inherit; appearance: none; -webkit-appearance: none;
 }
 .brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* ── Sobre dialog ─────────────────────────────────────────── */
+.sobre-dialog {
+  border: 1px solid var(--line, rgba(255,255,255,0.12));
+  border-radius: var(--radius, 0.5rem);
+  /* Force dark background — browser UA dialog styles use Canvas (white) */
+  background: var(--paper, #080b0e) !important;
+  color: var(--ink, #e8e4e0) !important;
+  color-scheme: dark;
+  padding: 0;
+  max-width: 720px;
+  width: 94vw;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.sobre-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(3px);
+}
+.sobre-inner {
+  position: relative;
+  padding: 3rem 2.5rem 2.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.sobre-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  font-size: 1.8rem;
+  color: var(--muted, #888);
+}
+.sobre-close:hover { color: var(--link, #aaa); }
+.sobre-dialog h2 {
+  font-size: 0.92rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 2rem;
+  font-weight: 800;
+}
+.sobre-body { font-size: 1rem; line-height: 1.75; }
+.sobre-body p { margin: 0 0 1.1em; }
+.sobre-body p:last-child { margin-bottom: 0; }
+.sobre-body strong { font-weight: 700; }
+.sobre-contact { margin-top: 2rem; font-size: 0.88em; color: var(--muted, #888); letter-spacing: 0.02em; }
 
 .nav { flex: 0 0 auto; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
@@ -936,6 +988,84 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   object-fit: contain;
 }
 
+/* YouTube click-to-play poster */
+.gallery-slot--yt-poster {
+  display: block;
+  position: relative;
+  width: 100%;
+  background: #080b0e;
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+  cursor: pointer;
+  overflow: hidden;
+}
+.gallery-slot--yt-poster[hidden] { display: none; }
+.yt-poster-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.yt-play-btn {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 200ms, transform 200ms;
+  pointer-events: none; /* parent div handles click */
+}
+.gallery-slot--yt-poster:hover .yt-play-btn {
+  background: #c00;
+  transform: scale(1.1);
+}
+
+/* Platform link card (Instagram, etc.) */
+.gallery-slot--platform-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  background: #080b0e;
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+  aspect-ratio: 1 / 1;
+}
+.gallery-slot--platform-card[hidden] { display: none; }
+.platform-card-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text-secondary, #8a96a3);
+  padding: 2rem;
+  transition: color 200ms;
+}
+.platform-card-link:hover { color: var(--accent, #3ecfcf); }
+.platform-card-icon {
+  width: 3rem;
+  height: 3rem;
+  stroke: currentColor;
+}
+.platform-card-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
 /* Thumbnail placeholder for non-image items */
 .gallery-thumb-placeholder {
   display: flex;
@@ -1535,6 +1665,69 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   transition: background .14s;
 }
 .eg-btn:hover { background: rgba(255,255,255,.16); }
+
+/* ── Help overlay (inside panel, above SVG) ── */
+.eg-help-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(6, 13, 22, 0.97);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.eg-help-overlay[hidden] { display: none; }
+
+.eg-help-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  background: none;
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7);
+  border-radius: 50%;
+  width: 1.55rem;
+  height: 1.55rem;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .14s, color .14s;
+}
+.eg-help-close:hover { border-color: var(--accent); color: var(--accent); }
+
+.eg-help-body {
+  padding: 1.5rem 1.2rem 1.2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.eg-help-title {
+  font-family: var(--font-heading, inherit);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1rem;
+}
+
+.eg-help-body p {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: rgba(228,224,214,.85);
+  margin: 0 0 0.75rem;
+  max-width: none;
+}
+
+.eg-help-footer {
+  margin-top: 1rem !important;
+  font-style: italic;
+  color: var(--accent) !important;
+  opacity: 0.8;
+}
 
 /* ── SVG body ── */
 .eg-body {
