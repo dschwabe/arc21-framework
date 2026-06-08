@@ -847,7 +847,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
   function _videoThumbUrl(url, poster) {
     if (poster) return poster;
     const yt = _ytId(url);
-    if (yt) return "https://img.youtube.com/vi/" + yt + "/mqdefault.jpg";
+    if (yt) return "https://img.youtube.com/vi/" + yt + "/hqdefault.jpg";
     return null;
   }
 
@@ -903,7 +903,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           const thumb = "https://img.youtube.com/vi/" + yt + "/mqdefault.jpg";
           return '<div class="gallery-slot gallery-slot--video gallery-slot--yt-poster"'
             + ' data-index="' + i + '" data-embed="' + escapeAttr(embedUrl + "&autoplay=1") + '"' + arStyle + hidden + '>'
-            + '<img src="' + escapeAttr(thumb) + '" alt="' + alt + '" class="yt-poster-img">'
+            + '<img src="' + escapeAttr(thumb) + '" alt="' + alt + '" class="yt-poster-img" onerror="this.style.display=\'none\'">'
             + '<button class="yt-play-btn" aria-label="Reproduzir vídeo" type="button">&#9654;</button>'
             + '</div>';
         }
