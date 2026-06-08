@@ -123,9 +123,25 @@ export async function loadSkinAssets(scope, id) {
     result[String(n)] = url;
   }
 
-  // 3. urls.txt — named and positional entries
-  // Skipped in bundle/file:// mode (fetch unavailable; external URLs need internet).
-  if (typeof __ARC21_ASSET_MANIFEST__ === "undefined") {
+  // 3. Named-slot discovery — three paths depending on environment:
+  //    a) Bundle mode: scan __ARC21_ASSET_MANIFEST__ (urls.txt not needed)
+  //    b) HTTP + urls.txt present: parse it (existing behaviour)
+  //    c) HTTP + no urls.txt: auto-discover via directory listing (dev server)
+  if (typeof __ARC21_ASSET_MANIFEST__ !== "undefined") {
+    // (a) Bundle mode — derive named slots directly from the manifest.
+    for (const _p of __ARC21_ASSET_MANIFEST__) {
+      if (!_p.startsWith(folder)) continue;
+      const _f = _p.slice(folder.length);
+      if (_f.includes("/")) continue;           // skip sub-folders
+      const _d = _f.lastIndexOf(".");
+      if (_d < 0) continue;
+      const _slot = _f.slice(0, _d);
+      if (_slot && /^[a-z0-9][a-z0-9_-]*$/i.test(_slot) && !result[_slot])
+        result[_slot] = _p;
+    }
+  } else {
+    // (b/c) HTTP mode — try urls.txt first; fall back to directory listing.
+    var _urlsTxtLoaded = false;
     try {
       const res = await fetch(folder + "urls.txt", { cache: "no-store" });
       if (res.ok) {
@@ -133,9 +149,13 @@ export async function loadSkinAssets(scope, id) {
         if (!urlsCt.startsWith("text/html")) {
           const text = await res.text();
           await applyUrlFile(text, result, folder);
+          _urlsTxtLoaded = true;
         }
       }
     } catch (_) {}
+    if (!_urlsTxtLoaded) {
+      await discoverFromDirectory(folder, result);
+    }
   }
 
   // 4. Narrative-level bg fallback for elements
@@ -144,26 +164,38 @@ export async function loadSkinAssets(scope, id) {
     if (narrativeID) {
       const narrativeFolder = "assets/skins/" + narrativeID + "/";
       const fallbackBg = await probeFile(narrativeFolder, "bg");
-      if (fallbackBg) {
-        result["bg"] = fallbackBg;
-      } else if (typeof __ARC21_ASSET_MANIFEST__ === "undefined") {
-        try {
-          const res = await fetch(narrativeFolder + "urls.txt", { cache: "no-store" });
-          if (res.ok) {
-            var fallbackCt = (res.headers.get("content-type") || "").toLowerCase();
-            if (!fallbackCt.startsWith("text/html")) {
-              const text = await res.text();
-              const temp = {};
-              await applyUrlFile(text, temp, narrativeFolder);
-              if (temp["bg"]) result["bg"] = temp["bg"];
-            }
-          }
-        } catch (_) {}
-      }
+      if (fallbackBg) result["bg"] = fallbackBg;
     }
   }
 
   return result;
+}
+
+// ---- Directory auto-discovery (dev server / HTTP mode) ----
+
+// When urls.txt is absent, fetch the folder URL. A dev server (e.g.
+// python -m http.server) returns an HTML directory listing with relative
+// <a href="filename.ext"> links; we parse those into named slots.
+// SPA hosts return the app shell instead — detected by the absence of
+// simple relative image-file links, so they are silently ignored.
+async function discoverFromDirectory(folder, result) {
+  try {
+    const res = await fetch(folder, { cache: "no-store" });
+    if (!res.ok) return;
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    if (!ct.includes("text/html")) return;
+    const html = await res.text();
+    const linkRe = /href="([^"/\\?#]+\.(?:jpg|jpeg|png|webp|gif|svg))"/gi;
+    var m;
+    while ((m = linkRe.exec(html)) !== null) {
+      const filename = m[1];
+      const dotIdx = filename.lastIndexOf(".");
+      if (dotIdx < 0) continue;
+      const slotID = filename.slice(0, dotIdx);
+      if (slotID && /^[a-z0-9][a-z0-9_-]*$/i.test(slotID) && !result[slotID])
+        result[slotID] = folder + filename;
+    }
+  } catch (_) {}
 }
 
 // ---- Internal helpers ----
@@ -214,7 +246,7 @@ async function applyUrlFile(text, result, folder) {
     if (colonIdx > 0) {
       const key = line.slice(0, colonIdx).trim();
       const rest = line.slice(colonIdx + 1).trim();
-      if (/^[a-z][a-z0-9_-]*$/i.test(key) && rest.length > 0) {
+      if (/^[a-z0-9][a-z0-9_-]*$/i.test(key) && rest.length > 0) {
         const isAbsolute = /^https?:\/\//i.test(rest) || rest.startsWith("//") || rest.startsWith("/");
         const resolved = isAbsolute ? rest : (folder ? folder + rest : rest);
         if (!result[key]) result[key] = resolved;  // local files win
