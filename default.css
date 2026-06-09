@@ -112,6 +112,9 @@ html:not([data-mgmt]) .mgmt-only { display: none !important; }
   width: 94vw;
   max-height: 88vh;
   overflow: hidden;
+}
+/* display:flex only when open — prevents overriding UA display:none on close() */
+.sobre-dialog[open] {
   display: flex;
   flex-direction: column;
 }
