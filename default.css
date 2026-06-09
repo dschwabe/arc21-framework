@@ -119,28 +119,35 @@ html:not([data-mgmt]) .mgmt-only { display: none !important; }
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(3px);
 }
-.sobre-inner {
-  position: relative;
-  padding: 3rem 2.5rem 2.5rem;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
+/* Sticky header — always visible, never scrolls away */
+.sobre-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem 0.9rem 2.5rem;
+  border-bottom: 1px solid var(--line, rgba(255,255,255,0.1));
+  flex-shrink: 0;
 }
-.sobre-close {
-  position: absolute;
-  top: 0.8rem;
-  right: 1rem;
-  font-size: 1.8rem;
-  color: var(--muted, #888);
-}
-.sobre-close:hover { color: var(--link, #aaa); }
 .sobre-dialog h2 {
   font-size: 0.92rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent);
-  margin: 0 0 2rem;
+  margin: 0;
   font-weight: 800;
+}
+.sobre-close {
+  font-size: 1.8rem;
+  color: var(--muted, #888);
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.sobre-close:hover { color: var(--link, #aaa); }
+.sobre-inner {
+  padding: 2rem 2.5rem 2.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 .sobre-body { font-size: 1rem; line-height: 1.75; }
 .sobre-body p { margin: 0 0 1.1em; }
