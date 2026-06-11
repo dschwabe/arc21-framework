@@ -8,6 +8,13 @@ touching any file.
 
 ## 0. Ongoing maintenance precautions (post-refactor — always apply)
 
+**Instance data is the source of truth.** Each instance site owns its
+`data/conceptual_graph.xlsx` (and the graph.json generated from it). The
+framework's only copy lives in `example/data/` and is purely a template for
+creating new instances — never copy it over an instance's XLSX, never "fix"
+instance data from the framework side, and never port instance content back
+here. `sync.py` already lists `data` as site-owned; keep it that way.
+
 **Diff before overwriting, in both directions.** Instance repos may carry
 `[framework]`-prefixed fixes that were never ported back here. Before copying
 any file framework→instance or instance→framework, `diff` it and read the
