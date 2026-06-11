@@ -26,6 +26,8 @@ JS_FILES = [
     "skins/linear/linear.js",
     "skins/scrolly/scrolly.js",
     "skins/concept-scrolly/concept-scrolly.js",
+    "skins/scrolly-staged/scrolly-staged.js",
+    "skins/scrolly-grammar-iv/scrolly-grammar-iv.js",
     "app.js",
 ]
 
@@ -35,6 +37,8 @@ CSS_FILES = [
     "skins/linear/linear.css",
     "skins/scrolly/scrolly.css",
     "skins/concept-scrolly/concept-scrolly.css",
+    "skins/scrolly-staged/scrolly-staged.css",
+    "skins/scrolly-grammar-iv/scrolly-grammar-iv.css",
 ]
 
 # Only these extensions are included in the asset manifest and zip.
@@ -272,10 +276,12 @@ def build_js(skin_index, asset_paths, i18n_data):
     registry_insert = """
 // ===== bundled skin registry =====
 const _BUNDLED_SKIN_REGISTRY = {
-  createConceptDefaultSkin:  typeof createConceptDefaultSkin  !== "undefined" ? createConceptDefaultSkin  : null,
-  createLinearSkin:          typeof createLinearSkin          !== "undefined" ? createLinearSkin          : null,
-  createScrollySkin:         typeof createScrollySkin         !== "undefined" ? createScrollySkin         : null,
-  createConceptScrollySkin:  typeof createConceptScrollySkin  !== "undefined" ? createConceptScrollySkin  : null,
+  createConceptDefaultSkin:   typeof createConceptDefaultSkin   !== "undefined" ? createConceptDefaultSkin   : null,
+  createLinearSkin:           typeof createLinearSkin           !== "undefined" ? createLinearSkin           : null,
+  createScrollySkin:          typeof createScrollySkin          !== "undefined" ? createScrollySkin          : null,
+  createConceptScrollySkin:   typeof createConceptScrollySkin   !== "undefined" ? createConceptScrollySkin   : null,
+  createScrollyStagedSkin:    typeof createScrollyStagedSkin    !== "undefined" ? createScrollyStagedSkin    : null,
+  createScrollyGrammarIvSkin: typeof createScrollyGrammarIvSkin !== "undefined" ? createScrollyGrammarIvSkin : null,
 };
 """
     # Insert registry just before app.js section
