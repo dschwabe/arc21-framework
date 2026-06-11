@@ -51,20 +51,29 @@ def git_log_oneline(path, ref):
     return r.stdout.strip() if r.returncode == 0 else ref
 
 
-def copy_dir(src, dst):
-    """Copy src directory to dst, respecting SUBPATH_OWNED."""
+def copy_dir(src, dst, top):
+    """Copy src directory to dst, respecting SUBPATH_OWNED.
+
+    `top` is the directory's name relative to the repo root (e.g. "skins"),
+    so SUBPATH_OWNED entries like skins/index.json are compared against the
+    full site-relative path. (A bug here once compared bare filenames, so
+    the protection silently never applied and site files were clobbered.)
+    """
     os.makedirs(dst, exist_ok=True)
+    skipped_owned = []
     for root, dirs, files in os.walk(src):
         rel_root = os.path.relpath(root, src)
         for fname in files:
-            rel_file = os.path.normpath(os.path.join(rel_root, fname))
+            rel_file = os.path.normpath(os.path.join(top, rel_root, fname))
             # Check if this subpath is site-owned
             if rel_file in SUBPATH_OWNED:
+                skipped_owned.append(rel_file)
                 continue
             src_file = os.path.join(root, fname)
-            dst_file = os.path.join(dst, rel_file)
+            dst_file = os.path.join(dst, os.path.relpath(rel_file, top))
             os.makedirs(os.path.dirname(dst_file), exist_ok=True)
             shutil.copy2(src_file, dst_file)
+    return skipped_owned
 
 
 def sync(framework_path, site_path="."):
@@ -76,6 +85,7 @@ def sync(framework_path, site_path="."):
     framework_skip = {"CLAUDE.md", "docs", "example", ".git", ".github", "dependents.json"}
 
     copied, skipped = [], []
+    owned_kept = []
 
     for name in sorted(os.listdir(framework_path)):
         if name.startswith(".") or name in SITE_OWNED or name in framework_skip:
@@ -84,10 +94,13 @@ def sync(framework_path, site_path="."):
         src = os.path.join(framework_path, name)
         dst = os.path.join(site_path, name)
         if os.path.isdir(src):
-            copy_dir(src, dst)
+            owned_kept += copy_dir(src, dst, name)
         else:
             shutil.copy2(src, dst)
         copied.append(name)
+
+    if owned_kept:
+        print(f"  Kept site-owned subpaths: {', '.join(sorted(owned_kept))}")
 
     version = git_head(framework_path)
     lock = {
