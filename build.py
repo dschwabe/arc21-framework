@@ -13,12 +13,14 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 JS_FILES = [
     "js/utils.js",
     "js/store.js",
+    "js/i18n.js",
     "js/parse/csv.js",
     "js/parse/xlsx.js",
     "js/parse/workbook.js",
     "js/graph/builder.js",
     "js/graph/navigation.js",
     "js/render/content.js",
+    "js/explore-graph.js",
     "js/skin/loader.js",
     "skins/concept-default/concept-default.js",
     "skins/linear/linear.js",
@@ -60,17 +62,66 @@ def scan_assets():
     return paths
 
 
+def scan_i18n():
+    """Return dict of { locale: parsed_json } for all i18n/*.json files."""
+    i18n_dir = os.path.join(BASE, "i18n")
+    result = {}
+    if not os.path.isdir(i18n_dir):
+        return result
+    for fname in sorted(os.listdir(i18n_dir)):
+        if not fname.endswith(".json") or fname.startswith("."):
+            continue
+        locale = fname[:-5]  # strip .json
+        path = os.path.join(i18n_dir, fname)
+        try:
+            with open(path, encoding="utf-8") as f:
+                result[locale] = json.load(f)
+        except Exception as e:
+            print(f"  ⚠ Could not read i18n/{fname}: {e}")
+    return result
+
+
 def build_zip(bundle_path, zip_path, asset_paths):
-    """Create a zip containing bundle.html and all assets/."""
-    assets_dir = os.path.join(BASE, "assets")
+    """Create a zip containing bundle.html, assets/, i18n/, and data XLSX(es)."""
     count = 0
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
         zf.write(bundle_path, "bundle.html")
+
+        # Assets (images, skin files, etc.)
         for rel in asset_paths:
             full = os.path.join(BASE, rel)
             if os.path.isfile(full):
                 zf.write(full, rel)
                 count += 1
+
+        # XLSX data file(s) — user imports manually after extracting.
+        # Only include conceptual_graph.xlsx and locale variants
+        # (conceptual_graph.<locale>.xlsx), not old/backup versions.
+        data_dir = os.path.join(BASE, "data")
+        if os.path.isdir(data_dir):
+            for fname in sorted(os.listdir(data_dir)):
+                if not (fname == "conceptual_graph.xlsx"
+                        or fname == "conceptual_graph.xlsm"
+                        or (fname.startswith("conceptual_graph.")
+                            and (fname.endswith(".xlsx") or fname.endswith(".xlsm"))
+                            and fname.count(".") == 2)):  # conceptual_graph.<locale>.xlsx
+                    continue
+                full = os.path.join(data_dir, fname)
+                if os.path.isfile(full):
+                    zf.write(full, os.path.join("data", fname))
+                    count += 1
+
+        # i18n JSON files (backup — already inlined in bundle.html, but useful
+        # if someone serves the zip via a local server instead of file://)
+        i18n_dir = os.path.join(BASE, "i18n")
+        if os.path.isdir(i18n_dir):
+            for fname in sorted(os.listdir(i18n_dir)):
+                if fname.endswith(".json") and not fname.startswith("."):
+                    full = os.path.join(i18n_dir, fname)
+                    if os.path.isfile(full):
+                        zf.write(full, os.path.join("i18n", fname))
+                        count += 1
+
     return count
 
 
@@ -79,9 +130,19 @@ def read(path):
         return f.read()
 
 def strip_modules(src):
-    """Remove ES module import/export syntax."""
+    """Remove ES module import/export syntax.
+
+    Aliased named imports (import { a as b } from ...) become const aliases
+    (const b = a;) so the importing file's local names keep working after
+    everything is concatenated into one script. The aliased module must
+    appear earlier in JS_FILES.
+    """
+    def _import_repl(m):
+        names = m.group(1)
+        aliases = re.findall(r'(\w+)\s+as\s+(\w+)', names)
+        return " ".join("const %s = %s;" % (alias, orig) for orig, alias in aliases)
     # Multi-line and single-line: import { ... } from "...";
-    src = re.sub(r'import\s*\{[^}]*\}\s*from\s*["\'][^"\']*["\'];?', '', src, flags=re.DOTALL)
+    src = re.sub(r'import\s*\{([^}]*)\}\s*from\s*["\'][^"\']*["\'];?', _import_repl, src, flags=re.DOTALL)
     # Bare: import "..."
     src = re.sub(r'import\s+["\'][^"\']*["\'];?', '', src)
     # Re-export: export { ... }
@@ -92,6 +153,28 @@ def strip_modules(src):
     src = re.sub(r'\bexport\s+default\b\s*', '', src)
     return src
 
+
+def replace_or_die(src, old, new, label, regex=False):
+    """Apply a patch and abort the build if the target text is not found.
+
+    The bundle patches work by rewriting known source snippets; if the
+    source drifts (e.g. a ?v=N cache-buster changes), a silent no-op here
+    ships a broken bundle.html. Failing loudly is mandatory.
+    """
+    if regex:
+        out, n = re.subn(old, new, src)
+    else:
+        n = src.count(old)
+        out = src.replace(old, new)
+    if n == 0:
+        raise SystemExit(
+            "build.py: patch '%s' did not match anything — the source file "
+            "has drifted from the expected snippet. Update the patch in "
+            "build.py, then re-verify bundle.html (see CLAUDE.md, bundle "
+            "verification)." % label
+        )
+    return out
+
 def patch_loader(src, skin_index_json):
     """
     Patch loader.js for standalone use:
@@ -99,26 +182,27 @@ def patch_loader(src, skin_index_json):
     2. Replace dynamic import() with a registry lookup.
     """
     # 1. Replace the fetch chain inside loadSkinIndex with inline data.
-    src = src.replace(
-        '_skinIndexCache.promise = fetch("skins/index.json")\n'
-        '    .then(function (r) { return r.ok ? r.json() : null; })\n'
-        '    .then(function (data) {\n'
-        '      _skinIndexCache.value = data || { defaultSkin: "linear", skins: [] };\n'
-        '      return _skinIndexCache.value;\n'
-        '    })\n'
-        '    .catch(function () {\n'
-        '      _skinIndexCache.value = { defaultSkin: "linear", skins: [] };\n'
-        '      return _skinIndexCache.value;\n'
-        '    });\n'
-        '  return _skinIndexCache.promise;',
-        '_skinIndexCache.value = ' + json.dumps(skin_index_json, ensure_ascii=False) + ';\n'
-        '  return Promise.resolve(_skinIndexCache.value);'
+    #    Regex tolerates query-string cache-busters on the fetched path.
+    src = replace_or_die(
+        src,
+        r'(?s)_skinIndexCache\.promise = fetch\("skins/index\.json[^"]*"\)'
+        r'.*?return _skinIndexCache\.promise;',
+        lambda _: ('_skinIndexCache.value = '
+                   + json.dumps(skin_index_json, ensure_ascii=False) + ';\n'
+                   '  return Promise.resolve(_skinIndexCache.value);'),
+        "loader.js skin-index fetch chain",
+        regex=True
     )
 
     # 2. Replace dynamic import() with bundle registry lookup.
-    src = src.replace(
-        'const mod = await import("../../skins/" + skinID + "/" + skinID + ".js");',
-        'const mod = _BUNDLED_SKIN_REGISTRY;'
+    #    [^"]* tolerates ?v=N cache-busters on the import path — a plain
+    #    string match here silently failed once when ?v=4 was added.
+    src = replace_or_die(
+        src,
+        r'const mod = await import\("\.\./\.\./skins/" \+ skinID \+ "/" \+ skinID \+ "\.js[^"]*"\);',
+        'const mod = _BUNDLED_SKIN_REGISTRY;',
+        "loader.js dynamic skin import",
+        regex=True
     )
     return src
 
@@ -135,7 +219,25 @@ def build_css():
 
 # ── Collect JS ─────────────────────────────────────────────────────────────────
 
-def build_js(skin_index, asset_paths):
+def patch_i18n(src, i18n_data):
+    """Patch loadUiStrings in i18n.js to use inlined __ARC21_I18N__ in bundle mode."""
+    return replace_or_die(
+        src,
+        '  if (_uiStrings && _uiStringsLocale === l) return _uiStrings;\n'
+        '  const paths = l !== DEFAULT_LOCALE',
+        '  if (_uiStrings && _uiStringsLocale === l) return _uiStrings;\n'
+        '  // Bundle mode: use inlined strings (works under file://)\n'
+        '  if (typeof __ARC21_I18N__ !== "undefined") {\n'
+        '    _uiStrings = __ARC21_I18N__[l] || __ARC21_I18N__[DEFAULT_LOCALE] || {};\n'
+        '    _uiStringsLocale = l;\n'
+        '    return Promise.resolve(_uiStrings);\n'
+        '  }\n'
+        '  const paths = l !== DEFAULT_LOCALE',
+        "i18n.js loadUiStrings bundle shim"
+    )
+
+
+def build_js(skin_index, asset_paths, i18n_data):
     parts = []
 
     # Asset manifest — injected as a global Set so probeFile() can resolve
@@ -147,11 +249,22 @@ def build_js(skin_index, asset_paths):
         + ");"
     )
 
+    # i18n strings — inlined so loadUiStrings() works under file://
+    if i18n_data:
+        parts.append("// ===== i18n strings (file:// mode) =====")
+        parts.append(
+            "var __ARC21_I18N__ = "
+            + json.dumps(i18n_data, ensure_ascii=False)
+            + ";"
+        )
+
     for path in JS_FILES:
         src = read(path)
         src = strip_modules(src)
         if path == "js/skin/loader.js":
             src = patch_loader(src, skin_index)
+        if path == "js/i18n.js" and i18n_data:
+            src = patch_i18n(src, i18n_data)
         parts.append("// ===== " + path + " =====")
         parts.append(src)
 
@@ -179,12 +292,12 @@ const _BUNDLED_SKIN_REGISTRY = {
 
 # ── Build HTML ─────────────────────────────────────────────────────────────────
 
-def build_html(asset_paths):
+def build_html(asset_paths, i18n_data):
     html = read("index.html")
     skin_index = json.loads(read("skins/index.json"))
 
     css = build_css()
-    js  = build_js(skin_index, asset_paths)
+    js  = build_js(skin_index, asset_paths, i18n_data)
 
     # Replace <link rel="stylesheet" href="./default.css" /> with inline <style>
     html = html.replace(
@@ -281,19 +394,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     asset_paths = scan_assets()
-    out = build_html(asset_paths)
+    i18n_data   = scan_i18n()
+    out = build_html(asset_paths, i18n_data)
     out_path = os.path.join(BASE, "bundle.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(out)
     size_kb = os.path.getsize(out_path) // 1024
-    print(f"bundle.html  written  ({size_kb} KB)  [{len(asset_paths)} assets in manifest]")
+    i18n_locales = list(i18n_data.keys())
+    print(f"bundle.html  written  ({size_kb} KB)  [{len(asset_paths)} assets in manifest, i18n: {i18n_locales or 'none'}]")
 
     if args.zip:
         zip_path = os.path.join(BASE, "bundle.zip")
         count = build_zip(out_path, zip_path, asset_paths)
         zip_kb  = os.path.getsize(zip_path) // 1024
-        print(f"bundle.zip   written  ({zip_kb} KB)  [{count} asset files]")
-        print(f"  → extract the zip, then open bundle.html from the extracted folder")
+        print(f"bundle.zip   written  ({zip_kb} KB)  [{count} files: assets + XLSX + i18n]")
+        print(f"  → extract the zip, open bundle.html, import conceptual_graph.xlsx via the file picker")
 
     build_mgmt()
     check_translation_sync()
