@@ -1,0 +1,19 @@
+{
+  "slots": [
+    { "id": "bg1",  "type": "background", "note": "Opening/closing void — dark still water" },
+    { "id": "bg2",  "type": "background", "note": "Blurred archive — fragments sections" },
+    { "id": "bg3",  "type": "background", "note": "19th-century arcade — Benjamin sections" },
+    { "id": "bg4",  "type": "background", "note": "Archive grid — signatures & residues" },
+    { "id": "bg5",  "type": "background", "note": "Celestial atlas — constellations sections" },
+    { "id": "bg6",  "type": "background", "note": "Double exposure hands — simultaneity" },
+    { "id": "bg7",  "type": "background", "note": "Human-interface blur — borders sections" },
+    { "id": "bg8a", "type": "background", "note": "Cyborg portrait layer A (human face)" },
+    { "id": "bg8b", "type": "background", "note": "Cyborg circuit layer B (circuit board)" },
+    { "id": "bg9",  "type": "background", "note": "19th-century Paris — lasca section" }
+  ],
+  "named_slots": [
+    { "id": "grain",         "type": "image", "note": "Film grain texture tile, 64×64px PNG, seamless" },
+    { "id": "halo-benjamin", "type": "image", "note": "Warm gold radial halo for Benjamin callout, PNG with alpha" },
+    { "id": "halo-didi",     "type": "image", "note": "Cool silver radial halo for Didi-Huberman callout, PNG with alpha" }
+  ]
+}

@@ -243,7 +243,8 @@ export function createConceptDefaultSkin(ctx) {
       for (var n = 1; ; n++) {
         var url = assets[String(n)];
         if (!url) break;
-        items.push({ src: url, alt: concept.concept || "", caption: "", sourceUrl: "", sourceTitle: "" });
+        var mediaType = ctx.autoMediaType ? ctx.autoMediaType(url) : "image";
+        items.push({ src: url, type: mediaType, alt: concept.concept || "", caption: "", sourceUrl: "", sourceTitle: "" });
       }
       if (!items.length) return;
       var galleryHost = app.querySelector("#conceptGallery");

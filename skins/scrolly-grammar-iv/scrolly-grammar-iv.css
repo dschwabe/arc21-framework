@@ -1,0 +1,388 @@
+/* ================================================================
+   ARC21 — Grammar IV: Fantasmagoria Palimpsesto
+   All rules scoped under body.skin-scrolly-grammar-iv
+   ================================================================ */
+
+body.skin-scrolly-grammar-iv {
+  background-color: #100a14;
+  overflow-x: hidden;
+}
+
+/* Typography and cursor are confined to the full-screen overlay so the
+   topbar, sidebar, and hero page keep their default styles when the
+   overlay is in PiP or closed state (prevents the font-size flash on
+   open, and the corrupted fonts when the overlay is later minimised). */
+body.skin-scrolly-grammar-iv .n-overlay,
+body.skin-scrolly-grammar-iv .giv-manifesto {
+  color: #e8e4f0;
+  font-family: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(32px, 2.24vw, 37px);
+  line-height: 1.9;
+  cursor: none;
+}
+
+/* ── Overlay: override framework background + hide n-bar ───────── */
+
+body.skin-scrolly-grammar-iv .n-overlay {
+  background: #100a14 !important;
+}
+body.skin-scrolly-grammar-iv .n-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Fixed overlay wrapper (lives inside .n-overlay) ──────────── */
+/* All position:fixed children are relative to .n-overlay's
+   containing block (transform creates a new one), which equals
+   the full viewport in is-full state.                             */
+
+body.skin-scrolly-grammar-iv .giv-fixed {
+  pointer-events: none;
+}
+
+body.skin-scrolly-grammar-iv .giv-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-repeat: repeat;
+  background-size: 64px 64px;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+  transition: opacity 2s ease;
+}
+body.giv-in-void .giv-grain { opacity: 0.16; }
+
+body.skin-scrolly-grammar-iv .giv-spectral {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+body.skin-scrolly-grammar-iv .giv-spectral-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+}
+
+body.skin-scrolly-grammar-iv .giv-svg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+body.skin-scrolly-grammar-iv .giv-vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+body.skin-scrolly-grammar-iv .giv-progress-track {
+  position: fixed;
+  left: 20px;
+  top: 10vh;
+  height: 80vh;
+  width: 20px;
+  z-index: 50;
+  overflow: visible;
+}
+.giv-track-dot {
+  animation: giv-track-pulse 3s ease-in-out infinite;
+}
+@keyframes giv-track-pulse {
+  0%, 100% { opacity: 0.8; }
+  50%       { opacity: 1; r: 5px; }
+}
+
+/* ── Custom cursor ─────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-cursor {
+  position: fixed;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  animation: giv-cursor-breathe 3s ease-in-out infinite;
+}
+@keyframes giv-cursor-breathe {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.9; }
+}
+
+/* ── Manifesto layout ──────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-manifesto {
+  position: relative;
+  z-index: 20;
+}
+body.skin-scrolly-grammar-iv .giv-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 18vh 0;
+}
+body.skin-scrolly-grammar-iv .giv-fullvh { min-height: 100vh; }
+
+body.skin-scrolly-grammar-iv .giv-inner {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  width: 100%;
+}
+body.skin-scrolly-grammar-iv .giv-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+body.skin-scrolly-grammar-iv .giv-wide { max-width: 80ch; }
+
+/* ── Opening typewriter ────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-opening-title {
+  font-family: 'EB Garamond', serif;
+  font-weight: 400;
+  font-style: italic;
+  color: #d4891a;
+  font-size: clamp(2.97rem, 5.19vw, 5.19rem);
+  line-height: 1.3;
+  text-align: center;
+  max-width: 700px;
+}
+body.skin-scrolly-grammar-iv .giv-cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: #b8a0c8;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: giv-blink 600ms step-end infinite;
+}
+@keyframes giv-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ── Titles ────────────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-title {
+  font-family: 'EB Garamond', serif;
+  font-weight: 400;
+  font-style: italic;
+  color: #d4891a;
+  font-size: 1.2em;
+  line-height: 1.35;
+  margin-bottom: 1.6rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-title.revealed {
+  opacity: 1;
+  transform: none;
+}
+body.skin-scrolly-grammar-iv .giv-title--normal  { font-style: normal; }
+body.skin-scrolly-grammar-iv .giv-title--large   { font-size: 1.2em; }
+body.skin-scrolly-grammar-iv .giv-title--xl      { font-size: 1.2em; line-height: 1.35; }
+body.skin-scrolly-grammar-iv .giv-title--centered{ text-align: center; }
+body.skin-scrolly-grammar-iv .giv-title--second  {
+  margin-top: -0.4rem;
+  opacity: 0;
+  transition-delay: 1.4s;
+}
+body.skin-scrolly-grammar-iv .giv-title--second.revealed { opacity: 1; transform: none; }
+body.skin-scrolly-grammar-iv .giv-standalone     { margin-bottom: 2.4rem; }
+
+body.skin-scrolly-grammar-iv .giv-kicker {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.71rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b4d7a;
+  margin-bottom: 0.9rem;
+  opacity: 0;
+  transition: opacity 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-kicker.revealed { opacity: 1; }
+
+/* ── Body text ─────────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-body p {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-body.revealed p { opacity: 1; transform: none; }
+body.skin-scrolly-grammar-iv .giv-body.revealed p:nth-child(2) { transition-delay: 0.3s; }
+body.skin-scrolly-grammar-iv .giv-body.revealed p:nth-child(3) { transition-delay: 0.6s; }
+body.skin-scrolly-grammar-iv .giv-body.revealed p:nth-child(4) { transition-delay: 0.9s; }
+
+body.skin-scrolly-grammar-iv .giv-body--breathe p { line-height: 2.2; }
+
+/* ── Archive-question (s-archive-question) ─────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-archive-q-p {
+  font-style: italic;
+  text-align: center;
+  line-height: 1.7;
+  color: #e8e4f0;
+}
+
+/* ── Arc21-birth stagger lines ─────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-birth-line {
+  line-height: 2.2;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-birth-line.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+body.skin-scrolly-grammar-iv .giv-single-italic {
+  font-style: italic;
+  font-size: clamp(1.45rem, 2.38vw, 1.98rem);
+  text-align: center;
+  line-height: 1.6;
+  color: #e8e4f0;
+}
+body.skin-scrolly-grammar-iv .giv-title-inline {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  color: #f0edf8;
+  font-size: clamp(1.45rem, 2.38vw, 1.98rem);
+  line-height: 1.4;
+  margin: 1.2em 0;
+}
+body.skin-scrolly-grammar-iv .giv-entre {
+  font-style: italic;
+  color: #e8e4f0;
+  line-height: 2.4;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-entre.revealed { opacity: 0.88; transform: none; }
+body.skin-scrolly-grammar-iv .giv-entre:nth-child(2) { transition-delay: 0.3s; }
+body.skin-scrolly-grammar-iv .giv-entre:nth-child(3) { transition-delay: 0.6s; }
+body.skin-scrolly-grammar-iv .giv-entre:nth-child(4) { transition-delay: 0.9s; }
+
+body.skin-scrolly-grammar-iv .giv-listening {
+  font-style: italic;
+  color: #e8e4f0;
+  font-size: clamp(1.45rem, 2.12vw, 1.78rem);
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* ── Void section overrides ────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-void .giv-title,
+body.skin-scrolly-grammar-iv .giv-void .giv-body p {
+  transition-duration: 2400ms;
+}
+
+/* ── Constellation hover colours + scroll pulse ─────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-cat { transition: color 350ms; cursor: default; }
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="1"]:hover,
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="1"].giv-cat-pulse { color: #b8a0c8; }
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="2"]:hover,
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="2"].giv-cat-pulse { color: #d4af37; }
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="3"]:hover,
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="3"].giv-cat-pulse { color: #7a9ab0; }
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="4"]:hover,
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="4"].giv-cat-pulse { color: #9a7a6b; }
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="5"]:hover,
+body.skin-scrolly-grammar-iv .giv-cat[data-hue="5"].giv-cat-pulse { color: #8a9a6b; }
+
+body.skin-scrolly-grammar-iv .giv-cat.giv-cat-pulse {
+  transition: color 200ms ease-in, color 600ms ease-out;
+}
+
+/* ── Lasca em ──────────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv em.giv-lasca { color: #f0edf8; font-style: normal; }
+
+/* ── Callout SVGs ──────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-callout-wrap {
+  margin: 4rem auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+body.skin-scrolly-grammar-iv .giv-callout-svg {
+  display: block;
+  width: 90vw;
+  max-width: 680px;
+  opacity: 0;
+  transition: opacity 2000ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-callout-svg.revealed { opacity: 1; }
+body.skin-scrolly-grammar-iv .giv-callout-didi-svg     { max-width: 680px; }
+
+/* ── Pulse line ────────────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-pulse-wrap { margin: 2rem auto 0; }
+body.skin-scrolly-grammar-iv .giv-pulse-svg {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  opacity: 0;
+  transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-pulse-svg.revealed { opacity: 1; }
+
+/* ── Hand pulse animation (simultaneity) ───────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-hand-a {
+  animation: giv-hand-a 4s ease-in-out infinite;
+}
+body.skin-scrolly-grammar-iv .giv-hand-b {
+  animation: giv-hand-b 4s ease-in-out infinite;
+}
+@keyframes giv-hand-a { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.17; } }
+@keyframes giv-hand-b { 0%, 100% { opacity: 0.17; } 50% { opacity: 0.28; } }
+
+/* ── Closing address ───────────────────────────────────────────── */
+
+body.skin-scrolly-grammar-iv .giv-address {
+  font-family: 'Space Mono', monospace;
+  font-style: normal;
+  font-size: 1.50rem;
+  color: #b8a0c8;
+  text-align: center;
+  line-height: 2;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+body.skin-scrolly-grammar-iv .giv-address.revealed { opacity: 1; }
+body.skin-scrolly-grammar-iv .giv-close-section .giv-inner { max-width: 900px; }
+
+/* ── Reduced motion ────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  body.skin-scrolly-grammar-iv *,
+  body.skin-scrolly-grammar-iv *::before,
+  body.skin-scrolly-grammar-iv *::after {
+    transition-duration: 200ms !important;
+    animation-duration:  200ms !important;
+    transition-delay:    0s    !important;
+  }
+}
+
+/* ── Mobile ────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  body.skin-scrolly-grammar-iv .giv-inner     { padding: 0 1.5rem; }
+  body.skin-scrolly-grammar-iv .giv-progress-track { display: none; }
+  body.skin-scrolly-grammar-iv { font-size: 16px; }
+}
