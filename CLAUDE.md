@@ -6,6 +6,28 @@ touching any file.
 
 ---
 
+## 0. Ongoing maintenance precautions (post-refactor — always apply)
+
+**Diff before overwriting, in both directions.** Instance repos may carry
+`[framework]`-prefixed fixes that were never ported back here. Before copying
+any file framework→instance or instance→framework, `diff` it and read the
+difference — never blindly overwrite.
+
+**Bundle verification is mandatory after touching build.py, js/skin/loader.js,
+or JS_FILES.** `patch_loader` in build.py rewrites loader.js by exact-string
+matching; if the loader source drifts (e.g. a `?v=N` cache-buster on the
+dynamic import path), the patch silently fails and bundle.html ships broken.
+After any such change, in an instance repo run `python3 build.py` and verify:
+
+    grep -c "_BUNDLED_SKIN_REGISTRY" bundle.html     # >= 2 (defined AND used)
+    grep -n 'await import("../../skins' bundle.html  # must return NOTHING
+
+then open bundle.html in a browser and confirm a concept page renders.
+Every module app.js imports must be listed in JS_FILES (js/i18n.js and
+js/explore-graph.js were each missed in the past — silent bundle crashes).
+
+---
+
 ## 1. What this refactor does
 
 **Before:** Each site repo is a full copy of the framework code plus its own data and
