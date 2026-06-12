@@ -51,6 +51,11 @@ def git_log_oneline(path, ref):
     return r.stdout.strip() if r.returncode == 0 else ref
 
 
+def _should_skip_file(name):
+    """Skip macOS cruft and backup files — never synced, at any depth."""
+    return name.startswith(".") or name.startswith("Icon") or name.endswith(".bak")
+
+
 def copy_dir(src, dst, top):
     """Copy src directory to dst, respecting SUBPATH_OWNED.
 
@@ -64,6 +69,8 @@ def copy_dir(src, dst, top):
     for root, dirs, files in os.walk(src):
         rel_root = os.path.relpath(root, src)
         for fname in files:
+            if _should_skip_file(fname):
+                continue
             rel_file = os.path.normpath(os.path.join(top, rel_root, fname))
             # Check if this subpath is site-owned
             if rel_file in SUBPATH_OWNED:
@@ -88,7 +95,7 @@ def sync(framework_path, site_path="."):
     owned_kept = []
 
     for name in sorted(os.listdir(framework_path)):
-        if name.startswith(".") or name in SITE_OWNED or name in framework_skip:
+        if _should_skip_file(name) or name in SITE_OWNED or name in framework_skip:
             skipped.append(name)
             continue
         src = os.path.join(framework_path, name)
