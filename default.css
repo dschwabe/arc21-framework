@@ -797,13 +797,39 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   margin-bottom: 0.75rem;
 }
 .concept-eyebrow-row .eyebrow { margin: 0; }
-.concept-skin-select { display: none; }
-.concept-skin-select.has-options { display: inline-block; }
+.fieldset-pill {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.fieldset-pill legend {
+  padding: 0 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.concept-skin-select-fieldset {
+  display: none;
+  padding: 0 0.5rem 0.3rem;
+}
+.concept-skin-select-fieldset.has-options { display: inline-block; }
+.concept-skin-select-fieldset .skin-select {
+  border: none;
+  background-color: transparent;
+  margin: 0;
+  padding: 0.1rem 1.5rem 0.1rem 0.5rem;
+}
+.pov-switcher-fieldset {
+  border-radius: 16px;
+  padding: 0.5rem 0.7rem 0.7rem;
+  margin-bottom: 1rem;
+}
 .pov-switcher {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-bottom: 1rem;
 }
 .pov-btn {
   border: 1px solid var(--line);
@@ -907,11 +933,6 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
 }
 .relation-summary a {
   color: var(--link);
-  font-weight: 800;
-}
-.relation-summary .relation-name,
-.relation-card .relation-name {
-  color: var(--accent);
   font-weight: 800;
 }
 .relation-card p { margin: 0.45rem 0 0; font-size: clamp(0.92rem, 0.95vw, 1rem); }

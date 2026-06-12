@@ -66,7 +66,8 @@ export function createConceptDefaultSkin(ctx) {
     if (ctx.applyI18n) ctx.applyI18n(fragment);
 
     // ── In-page skin select (top-right of description area) ─────────────────
-    const skinSelectEl = fragment.querySelector("#conceptSkinSelect");
+    const skinSelectEl    = fragment.querySelector("#conceptSkinSelect");
+    const skinSelectGroup = fragment.querySelector("#conceptSkinSelectGroup");
     if (skinSelectEl) {
       const perConcept = (ctx.appStore.conceptSkinsStore &&
         ctx.appStore.conceptSkinsStore[(concept.conceptID || "").toUpperCase()]) || [];
@@ -84,7 +85,7 @@ export function createConceptDefaultSkin(ctx) {
           skinSelectEl.appendChild(o);
         });
         skinSelectEl.value = skinParams.activeSkinID || options[0].id;
-        skinSelectEl.classList.add("has-options");
+        if (skinSelectGroup) skinSelectGroup.classList.add("has-options");
         skinSelectEl.addEventListener("change", function () {
           location.hash = conceptUrl(slug) + "?skin=" + encodeURIComponent(skinSelectEl.value);
         });
@@ -114,6 +115,12 @@ export function createConceptDefaultSkin(ctx) {
       }
 
       if (povTexts.length > 1) {
+        const switcherWrap = document.createElement("fieldset");
+        switcherWrap.className = "fieldset-pill pov-switcher-fieldset";
+        const legend = document.createElement("legend");
+        legend.textContent = _t("concept.povSwitcher.title", "P. de vista");
+        switcherWrap.appendChild(legend);
+
         const switcher = document.createElement("div");
         switcher.className = "pov-switcher";
         povTexts.forEach(function (entry) {
@@ -129,7 +136,8 @@ export function createConceptDefaultSkin(ctx) {
           });
           switcher.appendChild(btn);
         });
-        descEl.parentNode.insertBefore(switcher, descEl);
+        switcherWrap.appendChild(switcher);
+        descEl.parentNode.insertBefore(switcherWrap, descEl);
       }
 
       renderPov(activePovRef.entry);
@@ -157,9 +165,10 @@ export function createConceptDefaultSkin(ctx) {
     }
 
     // ── Relations ────────────────────────────────────────────────────────────
-    const relationsList = fragment.querySelector("#relationsList");
+    const relationsList    = fragment.querySelector("#relationsList");
+    const relationsSection = relationsList.closest(".relations-section");
     if (!concept.relations || !concept.relations.length) {
-      relationsList.innerHTML = "<p>" + _t("concept.relatedEmpty", "Nenhuma relação informada para este conceito.") + "</p>";
+      if (relationsSection) relationsSection.remove();
     } else {
       const seen = {};
       concept.relations.forEach(function (rel) {
@@ -179,9 +188,6 @@ export function createConceptDefaultSkin(ctx) {
             '<a href="' + escapeAttr(conceptUrl(rel.targetSlug)) + '">' +
               escapeHTML(targetLabel) +
             '</a>' +
-            _t("concept.relation.connector", " é ") + '<span class="relation-name">' +
-              escapeHTML(rel.relationName || "Relação") +
-            '</span>' +
             (rel.relationCategory
               ? ' <span class="relation-category parenthetical">(' +
                   escapeHTML(rel.relationCategory) + ')</span>'

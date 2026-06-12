@@ -270,10 +270,10 @@ strings. Every key has a hardcoded fallback so the file is optional. Known keys:
 | `concept.diagram.title` | `Mapa de Relações` |
 | `concept.externalRef.prompt` | `Aprofunde este tema em` |
 | `concept.externalRef.edgeLabel` | `site externo` |
-| `concept.relation.connector` | ` é ` |
-| `concept.relatedEmpty` | `Nenhuma relação informada para este conceito.` |
 | `concept.narrativeRefsTitle` | `Aparece nas narrativas` |
 | `concept.pov.fallback` | `Perspectiva` |
+| `concept.skinSelect.title` | `Visual` |
+| `concept.povSwitcher.title` | `P. de vista` |
 | `eg.title` | `Mapa de exploração` |
 
 ---
