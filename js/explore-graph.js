@@ -6,7 +6,7 @@
  */
 
 import { conceptUrl } from "./graph/navigation.js?v=6";
-import { escapeHTML, escapeAttr } from "./utils.js?v=6";
+import { escapeHTML, escapeAttr, isHttpUrl } from "./utils.js?v=6";
 import { t } from "./i18n.js?v=6";
 
 // ── Constants ─────────────────────────────────────────────────────────────
@@ -635,9 +635,9 @@ function createPanel() {
     // Normal mode quick tap — navigate
     const node = state.nodes[slug];
     if (!node) return;
-    if (node.isExternal && node.externalUrl) {
+    if (node.isExternal && node.externalUrl && isHttpUrl(node.externalUrl)) {
       window.open(node.externalUrl, "_blank", "noopener");
-    } else {
+    } else if (!node.isExternal) {
       window.location.hash = conceptUrl(slug);
     }
   });

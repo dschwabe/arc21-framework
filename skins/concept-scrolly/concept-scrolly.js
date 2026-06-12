@@ -10,7 +10,7 @@
  *   dataSourceID   — narrativeID to use as panels source
  */
 
-import { slugify } from "../../js/utils.js?v=6";
+import { slugify, escapeHTML, escapeAttr } from "../../js/utils.js?v=6";
 import { conceptUrl, resolveConceptSlug } from "../../js/graph/navigation.js?v=6";
 import { loadSkinAssets } from "../../js/skin/loader.js?v=6";
 
@@ -69,7 +69,7 @@ export function createConceptScrollySkin(ctx) {
         const before = rawText.slice(last, m.index);
         for (const part of before.split(/(\s+)/)) {
           if (/^\s+$/.test(part)) { html += part; }
-          else if (part.length > 0) { html += '<span class="scs-word-token" data-idx="' + idx + '">' + part + "</span>"; idx++; }
+          else if (part.length > 0) { html += '<span class="scs-word-token" data-idx="' + idx + '">' + escapeHTML(part) + "</span>"; idx++; }
         }
       }
       const target = m[1].trim();
@@ -77,14 +77,14 @@ export function createConceptScrollySkin(ctx) {
       // resolveWikiTarget handles both label and ID lookups; fall back to slugify
       const slug   = resolveConceptSlug(slugify(target)) || slugify(target);
       const href   = conceptUrl(slug);
-      html += '<span class="scs-word-token" data-idx="' + idx + '"><a class="wikilink" href="' + href + '" title="' + target + '">' + anchor + "</a></span>";
+      html += '<span class="scs-word-token" data-idx="' + idx + '"><a class="wikilink" href="' + href + '" title="' + escapeAttr(target) + '">' + escapeHTML(anchor) + "</a></span>";
       idx++;
       last = m.index + m[0].length;
     }
     const tail = rawText.slice(last);
     for (const part of tail.split(/(\s+)/)) {
       if (/^\s+$/.test(part)) { html += part; }
-      else if (part.length > 0) { html += '<span class="scs-word-token" data-idx="' + idx + '">' + part + "</span>"; idx++; }
+      else if (part.length > 0) { html += '<span class="scs-word-token" data-idx="' + idx + '">' + escapeHTML(part) + "</span>"; idx++; }
     }
     return html;
   }

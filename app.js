@@ -1081,7 +1081,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       if (sourceTitleEl) sourceTitleEl.textContent = it.sourceTitle || "";
       if (captionEl)     captionEl.textContent = it.caption || "";
       if (link) {
-        if (it.sourceUrl) { link.href = it.sourceUrl; link.removeAttribute("hidden"); }
+        if (it.sourceUrl && isHttpUrl(it.sourceUrl)) { link.href = it.sourceUrl; link.removeAttribute("hidden"); }
         else              { link.setAttribute("hidden", ""); }
       }
     }

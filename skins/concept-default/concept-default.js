@@ -12,7 +12,7 @@
  *   applyTooltips(root)
  */
 
-import { escapeHTML, escapeAttr } from "../../js/utils.js?v=6";
+import { escapeHTML, escapeAttr, isHttpUrl } from "../../js/utils.js?v=6";
 import { linkifyDescription } from "../../js/render/content.js?v=6";
 import { conceptUrl, narrativeElementUrl } from "../../js/graph/navigation.js?v=6";
 
@@ -146,7 +146,7 @@ export function createConceptDefaultSkin(ctx) {
       const pipe = concept.externalRef.indexOf("|");
       const refUrl   = (pipe >= 0 ? concept.externalRef.slice(pipe + 1) : concept.externalRef).trim();
       const refLabel = (pipe >= 0 ? concept.externalRef.slice(0, pipe)  : concept.externalRef).trim();
-      if (refUrl) {
+      if (refUrl && isHttpUrl(refUrl)) {
         const extLink = document.createElement("p");
         extLink.className = "concept-external-ref";
         extLink.innerHTML = _t("concept.externalRef.prompt", "Aprofunde este tema em") +
