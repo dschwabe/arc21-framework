@@ -1,15 +1,15 @@
 /* arc21-framework v2 */
-import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=6";
-import { parseCSV } from "./js/parse/csv.js?v=6";
-import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=6";
-import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=8";
-import { buildGraph, countRelations } from "./js/graph/builder.js?v=7";
-import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=6";
-import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=8";
-import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=6";
-import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=6";
-import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=6";
-import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=6";
+import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=10";
+import { parseCSV } from "./js/parse/csv.js?v=10";
+import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=10";
+import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=10";
+import { buildGraph, countRelations } from "./js/graph/builder.js?v=10";
+import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=10";
+import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=10";
+import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=10";
+import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=10";
+import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=10";
+import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=10";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
    CSV columns accepted:

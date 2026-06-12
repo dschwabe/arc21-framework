@@ -10,6 +10,8 @@
  *   loadSkinAssets(scope, id)     → Promise<{slotID: url}>
  */
 
+import { ARC21_VERSION } from "../version.js";
+
 const _skinIndexCache  = { value: null, promise: null };
 const _skinCSSLoaded   = {};
 const _skinInstances   = {};
@@ -49,7 +51,7 @@ export function ensureSkinCSS(skinID) {
   var link = document.createElement("link");
   link.id   = cssId;
   link.rel  = "stylesheet";
-  link.href = "skins/" + skinID + "/" + skinID + ".css?v=4";
+  link.href = "skins/" + skinID + "/" + skinID + ".css?v=" + ARC21_VERSION;
   document.head.appendChild(link);
 }
 
@@ -70,7 +72,7 @@ export async function getSkinInstance(skinID, ctx) {
   if (_skinInstances[skinID]) return _skinInstances[skinID];
   ensureSkinCSS(skinID);
   // Dynamic import path is relative to this module: ../../skins/<id>/<id>.js
-  const mod = await import("../../skins/" + skinID + "/" + skinID + ".js?v=4");
+  const mod = await import("../../skins/" + skinID + "/" + skinID + ".js?v=" + ARC21_VERSION);
   // Convert hyphenated IDs to PascalCase: "concept-default" → "ConceptDefault"
   const pascal = skinID.replace(/-([a-z])/g, function(_, c) { return c.toUpperCase(); });
   const factoryName = "create" + pascal.charAt(0).toUpperCase() + pascal.slice(1) + "Skin";
@@ -108,19 +110,32 @@ export async function loadSkinAssets(scope, id) {
 
   // 1. bg slot — not used for concepts
   if (!isConcept) {
-    const bgUrl = await probeFile(folder, "bg");
-    if (bgUrl) result["bg"] = bgUrl;
     // more-img slot: image file used as a clickable CTA widget (separate from the
     // "more" URL target which comes from urls.txt and may point to an HTML file)
-    const moreImgUrl = await probeFile(folder, "more");
+    const [bgUrl, moreImgUrl] = await Promise.all([
+      probeFile(folder, "bg"),
+      probeFile(folder, "more")
+    ]);
+    if (bgUrl) result["bg"] = bgUrl;
     if (moreImgUrl) result["more-img"] = moreImgUrl;
   }
 
-  // 2. Numbered slots — probe 1, 2, 3 … until first gap (hard cap: 30)
-  for (let n = 1; n <= 30; n++) {
-    const url = await probeFile(folder, String(n));
-    if (!url) break;
-    result[String(n)] = url;
+  // 2. Numbered slots — probe 1, 2, 3 … until first gap (hard cap: 30).
+  // Each batch of NUMBERED_SLOT_BATCH slots is probed concurrently; a
+  // missing slot within a batch stops the scan, even if later slots in
+  // that same batch exist.
+  const NUMBERED_SLOT_CAP = 30;
+  const NUMBERED_SLOT_BATCH = 5;
+  for (let start = 1; start <= NUMBERED_SLOT_CAP; start += NUMBERED_SLOT_BATCH) {
+    const batch = [];
+    for (let n = start; n < start + NUMBERED_SLOT_BATCH && n <= NUMBERED_SLOT_CAP; n++) batch.push(n);
+    const urls = await Promise.all(batch.map(function (n) { return probeFile(folder, String(n)); }));
+    let gap = false;
+    for (let i = 0; i < urls.length; i++) {
+      if (!urls[i]) { gap = true; break; }
+      result[String(batch[i])] = urls[i];
+    }
+    if (gap) break;
   }
 
   // 3. Named-slot discovery — three paths depending on environment:
@@ -212,19 +227,23 @@ async function probeFile(folder, name) {
     }
     return null;
   }
-  // HTTP mode: probe via HEAD request.
+  // HTTP mode: probe every extension's HEAD request concurrently, then
+  // return the first match in PROBE_EXTS priority order.
   // SPA hosts (Firebase, Netlify, etc.) rewrite missing paths to index.html
   // and return 200 with Content-Type: text/html — reject those.
-  for (var i = 0; i < PROBE_EXTS.length; i++) {
-    var url = folder + name + "." + PROBE_EXTS[i];
+  const results = await Promise.all(PROBE_EXTS.map(async function (ext) {
+    var url = folder + name + "." + ext;
     try {
       var res = await fetch(url, { method: "HEAD" });
       if (res.ok) {
         var ct = (res.headers.get("content-type") || "").toLowerCase();
-        if (ct.startsWith("text/html")) continue;
-        return url;
+        if (!ct.startsWith("text/html")) return url;
       }
     } catch (_) {}
+    return null;
+  }));
+  for (var i = 0; i < results.length; i++) {
+    if (results[i]) return results[i];
   }
   return null;
 }

@@ -6,7 +6,7 @@
  * Depends on js/utils.js.
  */
 
-import { slugify, normalizeConceptId, get, makeCsvImportError } from "../utils.js?v=6";
+import { slugify, normalizeConceptId, get, makeCsvImportError } from "../utils.js?v=10";
 
 /**
  * Build a graph from an array of row objects.

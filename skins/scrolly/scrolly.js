@@ -15,9 +15,9 @@
  *   loadSkinAssets(scope, id)  — returns Promise<{slotID: url}>
  */
 
-import { getNarrativeElement } from "../../js/graph/navigation.js?v=6";
-import { splitElementPanels, parsePanelBlocks, renderPanelHtml, renderInlineMarkdown, toRoman, shortChapterLabel } from "../../js/render/content.js?v=6";
-import { escapeHTML, escapeAttr } from "../../js/utils.js?v=6";
+import { getNarrativeElement } from "../../js/graph/navigation.js?v=10";
+import { splitElementPanels, parsePanelBlocks, renderPanelHtml, renderInlineMarkdown, toRoman, shortChapterLabel } from "../../js/render/content.js?v=10";
+import { escapeHTML, escapeAttr } from "../../js/utils.js?v=10";
 
 export function createScrollySkin(ctx) {
   async function render(narrativeID, skinParams) {

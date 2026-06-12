@@ -11,6 +11,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ── JS files in topological dependency order ──────────────────────────────────
 JS_FILES = [
+    "js/version.js",
     "js/utils.js",
     "js/store.js",
     "js/i18n.js",
@@ -199,11 +200,13 @@ def patch_loader(src, skin_index_json):
     )
 
     # 2. Replace dynamic import() with bundle registry lookup.
-    #    [^"]* tolerates ?v=N cache-busters on the import path — a plain
-    #    string match here silently failed once when ?v=4 was added.
+    #    [^"]* tolerates ?v=N cache-busters on the import path, and the
+    #    optional `+ ARC21_VERSION` suffix tolerates the version-constant
+    #    form — a plain string match here silently failed once when ?v=4
+    #    was added.
     src = replace_or_die(
         src,
-        r'const mod = await import\("\.\./\.\./skins/" \+ skinID \+ "/" \+ skinID \+ "\.js[^"]*"\);',
+        r'const mod = await import\("\.\./\.\./skins/" \+ skinID \+ "/" \+ skinID \+ "\.js[^"]*"(?:\s*\+\s*ARC21_VERSION)?\);',
         'const mod = _BUNDLED_SKIN_REGISTRY;',
         "loader.js dynamic skin import",
         regex=True

@@ -12,9 +12,9 @@
  *   applyTooltips(root)
  */
 
-import { escapeHTML, escapeAttr, isHttpUrl } from "../../js/utils.js?v=6";
-import { linkifyDescription } from "../../js/render/content.js?v=6";
-import { conceptUrl, narrativeElementUrl } from "../../js/graph/navigation.js?v=6";
+import { escapeHTML, escapeAttr, isHttpUrl } from "../../js/utils.js?v=10";
+import { linkifyDescription } from "../../js/render/content.js?v=10";
+import { conceptUrl, narrativeElementUrl } from "../../js/graph/navigation.js?v=10";
 
 // ── HTML-file content helpers ──────────────────────────────────────────────
 // If the content field is a filename ending in .htm/.html, render it in a

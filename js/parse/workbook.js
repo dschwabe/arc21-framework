@@ -8,11 +8,11 @@ import {
   unzipXlsxEntries, zipText, readSharedStrings, readWorkbookSheets,
   worksheetToMatrix, matrixToObjects,
   hasColumns, formatSheetDiagnostics, getSheetInfoByName
-} from "./xlsx.js?v=6";
+} from "./xlsx.js?v=10";
 
 import {
   get, normalizeConceptId, makeSpreadsheetImportError
-} from "../utils.js?v=6";
+} from "../utils.js?v=10";
 
 // Re-export for callers that only import workbook.
 export { hasColumns, getSheetInfoByName };
