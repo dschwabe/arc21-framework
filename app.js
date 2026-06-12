@@ -1512,7 +1512,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           e.preventDefault();
           e.stopPropagation();
           _nUpdatePipCard();
-          var token = decodeURIComponent(href.slice("#/concept/".length));
+          var token = safeDecode(href.slice("#/concept/".length));
           var slug  = resolveConceptSlug(token) || token;
           history.pushState(null, "", href);
           renderConcept(slug, "");
@@ -1750,6 +1750,12 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     app.innerHTML = '<section class="hero"><div class="hero-card"><p class="eyebrow">Conceito não encontrado</p><h1>Não encontrei este conceito</h1><div class="error-box">O slug <code>' + escapeHTML(slug) + '</code> não está no grafo carregado.</div><p><a class="start-link" href="#/">Voltar à home</a></p></div></section>';
   }
 
+  // decodeURIComponent throws on malformed percent-escapes (e.g. "%zz").
+  // Routing must never crash on a bad hash — fall back to the raw string.
+  function safeDecode(s) {
+    try { return decodeURIComponent(s); } catch (e) { return s; }
+  }
+
   function splitHashAndQuery(hash) {
     const raw = String(hash || "#/");
     const qIdx = raw.indexOf("?");
@@ -1760,8 +1766,8 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     queryStr.split("&").forEach(function (pair) {
       if (!pair) return;
       const eq = pair.indexOf("=");
-      const k = decodeURIComponent(eq < 0 ? pair : pair.slice(0, eq));
-      const v = eq < 0 ? "" : decodeURIComponent(pair.slice(eq + 1));
+      const k = safeDecode(eq < 0 ? pair : pair.slice(0, eq));
+      const v = eq < 0 ? "" : safeDecode(pair.slice(eq + 1));
       if (k) query[k] = v;
     });
     return { path: path, query: query };
@@ -1774,26 +1780,26 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
 
     const elementMatch = path.match(/^#\/narrative\/([^/]+)\/element\/([^/]+)$/);
     if (elementMatch) {
-      const narrativeID = decodeURIComponent(elementMatch[1]);
+      const narrativeID = safeDecode(elementMatch[1]);
       if (query.skin) {
         // Skin override on an element URL — resolve skin at narrative level
         const skinID = await _resolveSkinForNarrative(narrativeID, query.skin);
         await _renderWithSkin(narrativeID, skinID);
       } else {
-        renderNarrativeElement(narrativeID, decodeURIComponent(elementMatch[2]), query.highlight || "");
+        renderNarrativeElement(narrativeID, safeDecode(elementMatch[2]), query.highlight || "");
       }
       return;
     }
     const narrativeMatch = path.match(/^#\/narrative\/([^/]+)$/);
     if (narrativeMatch) {
-      const narrativeID = decodeURIComponent(narrativeMatch[1]);
+      const narrativeID = safeDecode(narrativeMatch[1]);
       const skinID = await _resolveSkinForNarrative(narrativeID, query.skin || "");
       await _renderWithSkin(narrativeID, skinID);
       return;
     }
     const match = path.match(/^#\/concept\/([^/]+)$/);
     if (match) {
-      const token = decodeURIComponent(match[1]);
+      const token = safeDecode(match[1]);
       const slug  = resolveConceptSlug(token) || token; // accepts C051 or infancia-algoritmica
       renderConcept(slug, query.skin || "");
       return;
@@ -2202,14 +2208,19 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     }
   }
 
+  // Once the initial router() call has resolved, the app has something
+  // rendered on screen — later uncaught errors (e.g. from a browser
+  // extension) should be logged, not replace the whole page.
+  let _bootCompleted = false;
+
   window.addEventListener("error", function (event) {
     console.error(event.error || event.message);
-    showFatalError(event.message || "Erro não identificado.", event.error);
+    if (!_bootCompleted) showFatalError(event.message || "Erro não identificado.", event.error);
   });
 
   window.addEventListener("unhandledrejection", function (event) {
     console.error(event.reason);
-    showFatalError("Promessa rejeitada sem tratamento.", event.reason);
+    if (!_bootCompleted) showFatalError("Promessa rejeitada sem tratamento.", event.reason);
   });
 
   function _populateSkinSelects(index) {
@@ -2234,7 +2245,9 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     window.addEventListener("hashchange", router);
     Promise.all([loadUiStrings(getLocale()), tryAutoloadDefaultData()]).then(function () {
       applyI18n(document);
-      router();
+      return router();
+    }).then(function () {
+      _bootCompleted = true;
     });
   } catch (err) {
     console.error(err);
