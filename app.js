@@ -36,14 +36,6 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
 (function () {
   "use strict";
 
-  const STORAGE_DATA_KEY = "conceptGraph.data.v4";
-  const STORAGE_HISTORY_KEY = "conceptGraph.history.v1";
-  const STORAGE_PREVIOUS_KEY = "conceptGraph.previousConcept.v1";
-  const STORAGE_SNAPSHOT_TEMPLATE_KEY = "conceptGraph.snapshotTemplate.v1";
-  const STORAGE_NARRATIVES_KEY = "conceptGraph.narratives.v1";
-  const STORAGE_MEDIA_KEY = "conceptGraph.media.v1";
-  const STORAGE_TEMPLATES_KEY = "conceptGraph.templates.v1";
-  const STORAGE_NARRATIVE_SKINS_KEY = "conceptGraph.narrativeSkins.v1";
   const STORAGE_SOURCE_LABEL_KEY = "conceptGraph.sourceLabel.v1";
   const DEFAULT_SNAPSHOT_TEMPLATE = "https://api.microlink.io/?url={url}&screenshot=true&embed=screenshot.url";
   const HELP_CONFIG_PATH = "help-config.json";
