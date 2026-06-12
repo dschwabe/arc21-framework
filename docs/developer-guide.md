@@ -261,8 +261,8 @@ The core layout relies on `position: sticky`. A critical constraint: **do not se
 
 ```js
 // skins/my-scrolly/my-scrolly.js
-import { getNarrativeElement } from "../../js/graph/navigation.js?v=6";
-import { escapeHTML } from "../../js/utils.js?v=6";
+import { getNarrativeElement } from "../../js/graph/navigation.js?v=10";
+import { escapeHTML } from "../../js/utils.js?v=10";
 
 export function createMyScrollySkin(ctx) {
 
@@ -1357,7 +1357,7 @@ index.html
         └── js/i18n.js
 ```
 
-All inter-module imports use a `?v=N` cache-busting suffix (e.g. `?v=6`). There is no build step — the browser resolves native ES modules directly.
+All inter-module imports use a `?v=N` cache-busting suffix (currently `?v=10`), kept in sync with `ARC21_VERSION` in `js/version.js`. There is no build step — the browser resolves native ES modules directly.
 
 ---
 
@@ -1389,7 +1389,7 @@ data/               ← conceptual_graph.xlsx
 
 **State is stored in `localStorage`.** When the user loads a spreadsheet, the parsed graph, narratives, media, and skin assignments are serialised to `localStorage`. On the next visit, the app hydrates from storage before the user does anything. This makes the app work offline after the first load.
 
-**Cache-busting** uses `?v=6` query suffixes on all module imports. When the major version changes, all cached modules are invalidated. Minor updates within v6 are handled by Firebase's `Cache-Control: public, max-age=3600` headers.
+**Cache-busting** uses `?v=N` query suffixes on all module imports and stylesheet links, with `N` centralized as `ARC21_VERSION` in `js/version.js` (currently 10). Static `import` specifiers must be string literals, so bumping the version means updating `ARC21_VERSION` and find/replacing `?v=<old>` → `?v=<new>` across `app.js`, `js/**/*.js`, `index.html`, and `mgmt.html` — `js/skin/loader.js` builds its skin-asset paths at runtime from `ARC21_VERSION` directly and needs no edit. Minor updates within a version are handled by Firebase's `Cache-Control: public, max-age=3600` headers.
 
 ---
 

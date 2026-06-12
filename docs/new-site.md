@@ -261,13 +261,17 @@ git push
 ### CSS versioning
 
 `index.html` must reference `default.css` with a version query to prevent
-browsers from serving a cached version that predates the `mgmt-only` rule:
+browsers from serving a stale cached copy:
 
 ```html
-<link rel="stylesheet" href="./default.css?v=9" />
+<link rel="stylesheet" href="./default.css?v=10" />
 ```
 
-Bump the version number whenever `default.css` changes significantly.
+This `?v=N` suffix is shared with all JS module imports and is centralized as
+`ARC21_VERSION` in `js/version.js`. Don't bump it on its own — bumping the
+version means updating `ARC21_VERSION` and find/replacing `?v=<old>` →
+`?v=<new>` across `app.js`, `js/**/*.js`, `index.html`, and `mgmt.html` (see
+`js/version.js` for the full checklist).
 
 ### Customising the title
 

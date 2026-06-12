@@ -124,12 +124,17 @@ Because browsers cache ES modules aggressively, every `import` statement in
 `app.js` (and transitively in skin files) appends `?v=N`:
 
 ```js
-import { loadSkinIndex } from "./js/skin/loader.js?v=6";
+import { loadSkinIndex } from "./js/skin/loader.js?v=10";
 ```
 
-Bump the version number whenever you change a module's exported interface or
-any logic that affects stored data. A simple heuristic: if you'd want users to
-get the new code immediately after a deploy, bump it.
+`N` is centralized as `ARC21_VERSION` in `js/version.js` — every static
+import across the codebase must use the same literal number. Bump the
+version whenever you change a module's exported interface or any logic that
+affects stored data (heuristic: if you'd want users to get the new code
+immediately after a deploy, bump it). Bumping means updating
+`ARC21_VERSION` and find/replacing `?v=<old>` → `?v=<new>` across `app.js`,
+`js/**/*.js`, `index.html`, and `mgmt.html` — `js/skin/loader.js` reads
+`ARC21_VERSION` at runtime and needs no edit.
 
 ---
 
