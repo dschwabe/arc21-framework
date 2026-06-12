@@ -25,14 +25,57 @@ JSON_PATH = "data/graph.json"
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+def normalize_header(h):
+    """Mirror normalizeHeader() in js/utils.js: trim, strip BOM, lowercase,
+    drop whitespace and underscores."""
+    s = str(h or "").strip()
+    if s.startswith("﻿"):
+        s = s[1:]
+    s = s.lower()
+    s = re.sub(r"\s+", "", s)
+    return s.replace("_", "")
+
+
+def find_sheet(wb, name):
+    """Find a worksheet by name, comparing normalized names (mirrors
+    getSheetInfoByName in js/parse/xlsx.js), so "Relation Types" and
+    "RelationTypes" both resolve to the same sheet."""
+    target = normalize_header(name)
+    for sheetname in wb.sheetnames:
+        if normalize_header(sheetname) == target:
+            return wb[sheetname]
+    return None
+
+
 def normalize_id(val):
+    """Mirror normalizeConceptId() in js/utils.js: trim + uppercase."""
     if val is None:
         return ""
-    return re.sub(r"\s+", "-", str(val).strip()).upper()
+    return str(val).strip().upper()
+
+
+_TRUTHY_RE = re.compile(r"^true|1$", re.IGNORECASE)
+
+
+def is_truthy(val):
+    """Mirror the /^true|1$/i.test(...) checks workbook.js uses for
+    isDefault / isDefaultConcept / isDefaultNarrative flags."""
+    return bool(_TRUTHY_RE.search(str(val or "")))
+
+
+def to_number(raw):
+    """Mirror `Number(raw) || 0`, collapsing integral floats to ints."""
+    if not raw:
+        return 0
+    try:
+        f = float(raw)
+    except ValueError:
+        return 0
+    return int(f) if f.is_integer() else f
 
 
 def cell(row, *keys):
-    """Return the first non-None value for any of the given keys."""
+    """Return the first non-empty value for any of the given keys."""
     for k in keys:
         v = row.get(k)
         if v is not None:
@@ -60,26 +103,49 @@ def parse_key_value_params(raw):
     return out
 
 
+def format_cell(v):
+    """Stringify a cell value. openpyxl returns numeric cells as float
+    (e.g. 1 -> 1.0); collapse integral floats so IDs match the raw string
+    JS reads from the XLSX XML (e.g. "1", not "1.0")."""
+    if v is None:
+        return ""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v).strip()
+
+
+def read_sheet(ws):
+    """Convert an openpyxl worksheet to (headers, rows): rows is a list of
+    dicts keyed by header."""
+    raw_rows = list(ws.iter_rows(values_only=True))
+    if not raw_rows:
+        return [], []
+    headers = [str(h).strip() if h is not None else "" for h in raw_rows[0]]
+    rows = []
+    for raw_row in raw_rows[1:]:
+        d = {}
+        for h, v in zip(headers, raw_row):
+            if h:
+                d[h] = format_cell(v)
+        rows.append(d)
+    return headers, rows
+
+
 def sheet_to_rows(ws):
     """Convert an openpyxl worksheet to a list of dicts (header row as keys)."""
-    rows = list(ws.iter_rows(values_only=True))
-    if not rows:
-        return []
-    headers = [str(h).strip() if h is not None else "" for h in rows[0]]
-    result = []
-    for row in rows[1:]:
-        d = {}
-        for h, v in zip(headers, row):
-            if h:
-                d[h] = str(v).strip() if v is not None else ""
-        result.append(d)
-    return result
+    return read_sheet(ws)[1]
+
+
+def has_columns(headers, names):
+    """Mirror hasColumns() in js/parse/xlsx.js."""
+    cols = set(normalize_header(h) for h in headers if h)
+    return all(normalize_header(n) in cols for n in names)
 
 
 # ── sheet parsers (mirrors js/parse/workbook.js) ─────────────────────────────
 
 def parse_site(wb):
-    ws = wb["Site"] if "Site" in wb.sheetnames else None
+    ws = find_sheet(wb, "Site")
     if not ws:
         return {}
     out = {}
@@ -93,9 +159,9 @@ def parse_site(wb):
 
 def parse_concepts_relations(wb):
     """Build outputRows exactly as parseCombinedWorkbook does."""
-    concepts_ws = wb["Concepts"] if "Concepts" in wb.sheetnames else None
-    relations_ws = wb["Relations"] if "Relations" in wb.sheetnames else None
-    rel_types_ws = wb["RelationTypes"] if "RelationTypes" in wb.sheetnames else None
+    concepts_ws = find_sheet(wb, "Concepts")
+    relations_ws = find_sheet(wb, "Relations")
+    rel_types_ws = find_sheet(wb, "Relation Types")
 
     if not concepts_ws or not relations_ws:
         return []
@@ -204,8 +270,8 @@ def parse_concepts_relations(wb):
 
 def parse_narratives(wb):
     """Build narratives store: { byId, order, elementsById, loadedAt }"""
-    narratives_ws = wb["Narratives"] if "Narratives" in wb.sheetnames else None
-    elements_ws = wb["Elements"] if "Elements" in wb.sheetnames else None
+    narratives_ws = find_sheet(wb, "Narratives")
+    elements_ws = find_sheet(wb, "Elements")
     if not narratives_ws or not elements_ws:
         return None
 
@@ -255,51 +321,124 @@ def parse_narratives(wb):
     }
 
 
-def parse_narrative_skins(wb):
-    ws = wb["Narrative Skins"] if "Narrative Skins" in wb.sheetnames else None
+def parse_templates(wb):
+    ws = find_sheet(wb, "Templates")
     if not ws:
         return {}
+    headers, rows = read_sheet(ws)
+    if not has_columns(headers, ["templateID"]):
+        return {}
     out = {}
-    for row in sheet_to_rows(ws):
-        sid = cell(row, "skinID")
-        nid = cell(row, "narrativeID")
-        is_default_raw = cell(row, "isDefault").lower()
-        is_default = is_default_raw in ("1", "true", "sim", "yes")
+    for row in rows:
+        tid = cell(row, "templateID", "TemplateID", "id")
+        if not tid:
+            continue
+        applies_raw = cell(row, "appliesTo", "AppliesTo", "applies")
+        out[tid] = {
+            "templateID": tid,
+            "templateName": cell(row, "templateName", "name", "label"),
+            "appliesTo": [s.strip().lower() for s in applies_raw.split(",") if s.strip()] if applies_raw else [],
+            "isDefaultConcept": is_truthy(cell(row, "isDefaultConcept", "defaultConcept")),
+            "isDefaultNarrative": is_truthy(cell(row, "isDefaultNarrative", "defaultNarrative")),
+            "parameters": parse_key_value_params(cell(row, "parameters", "params")),
+            "description": cell(row, "description", "Description"),
+        }
+    return out
+
+
+def parse_media(wb):
+    ws = find_sheet(wb, "Media")
+    if not ws:
+        return {}
+    headers, rows = read_sheet(ws)
+    if not has_columns(headers, ["scope", "scopeID"]):
+        return {}
+    out = {}
+    for row in rows:
+        scope = cell(row, "scope", "Scope", "kind").lower()
+        scope_id = normalize_id(cell(row, "scopeID", "ScopeID", "scopeId", "id"))
+        if not scope or not scope_id:
+            continue
+        key = scope + ":" + scope_id
+        pov_raw = cell(row, "povScope", "pov", "povs")
+        out.setdefault(key, []).append({
+            "order":       to_number(cell(row, "order", "Order", "index", "ord")),
+            "type":        (cell(row, "type", "Type", "mediaType") or "image").lower(),
+            "file":        cell(row, "file", "File", "filename", "filepath"),
+            "poster":      cell(row, "poster", "Poster", "thumbnail", "thumb"),
+            "aspectRatio": cell(row, "aspectRatio", "aspect_ratio", "aspect", "ratio"),
+            "sandbox":     cell(row, "sandbox", "Sandbox"),
+            "caption":     cell(row, "caption", "Caption", "legenda"),
+            "sourceUrl":   cell(row, "sourceUrl", "url", "postUrl"),
+            "sourceTitle": cell(row, "sourceTitle", "postTitle", "source title", "title"),
+            "alt":         cell(row, "alt", "altText", "alternative"),
+            "povScope":    [s.strip() for s in pov_raw.split(",") if s.strip()] if pov_raw else [],
+        })
+    return out
+
+
+def parse_narrative_skins(wb):
+    ws = find_sheet(wb, "Narrative Skins")
+    if not ws:
+        return {}
+    headers, rows = read_sheet(ws)
+    if not has_columns(headers, ["skinID", "narrativeID"]):
+        return {}
+    out = {}
+    for row in rows:
+        sid = cell(row, "skinID", "SkinID", "id")
+        nid = cell(row, "narrativeID", "NarrativeID")
         if not sid or not nid:
             continue
-        out.setdefault(nid, []).append({"skinID": sid, "narrativeID": nid, "isDefault": is_default})
+        tags_raw = cell(row, "tags", "Tags")
+        eg_mode = cell(row, "egMode", "eg_mode", "EGMode", "egmode")
+        out.setdefault(nid, []).append({
+            "skinID": sid,
+            "narrativeID": nid,
+            "skinName": cell(row, "skinName", "name", "label"),
+            "isDefault": is_truthy(cell(row, "isDefault", "default")),
+            "templateID": cell(row, "templateID", "TemplateID"),
+            "parameters": parse_key_value_params(cell(row, "parameters", "params")),
+            "coverImage": cell(row, "coverImage", "cover"),
+            "egMode": eg_mode or None,
+            "tags": [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else [],
+        })
     return out
 
 
 def parse_concept_skins(wb):
-    ws = wb["Concept Skins"] if "Concept Skins" in wb.sheetnames else None
+    ws = find_sheet(wb, "Concept Skins")
     if not ws:
         return {}
+    headers, rows = read_sheet(ws)
+    if not has_columns(headers, ["skinID", "conceptID"]):
+        return {}
     out = {}
-    for row in sheet_to_rows(ws):
-        sid = cell(row, "skinID")
-        cid = normalize_id(cell(row, "conceptID"))
-        is_default_raw = cell(row, "isDefault").lower()
-        is_default = is_default_raw in ("1", "true", "sim", "yes")
+    for row in rows:
+        sid = cell(row, "skinID", "SkinID", "id")
+        cid = normalize_id(cell(row, "conceptID", "ConceptID"))
         if not sid or not cid:
             continue
         tags_raw = cell(row, "tags", "Tags")
+        eg_mode = cell(row, "egMode", "eg_mode", "EGMode")
         out.setdefault(cid, []).append({
             "skinID":         sid,
             "conceptID":      cid,
             "skinName":       cell(row, "skinName", "name", "label") or None,
             "skinImplID":     cell(row, "skinImplID", "implID", "impl") or None,
-            "isDefault":      is_default,
+            "isDefault":      is_truthy(cell(row, "isDefault", "default")),
+            "templateID":     cell(row, "templateID", "TemplateID"),
             "parameters":     parse_key_value_params(cell(row, "parameters", "params")),
-            "dataSourceType": cell(row, "dataSourceType", "sourceType") or "",
-            "dataSourceID":   cell(row, "dataSourceID", "sourceID") or "",
+            "dataSourceType": cell(row, "dataSourceType", "sourceType"),
+            "dataSourceID":   cell(row, "dataSourceID", "sourceID"),
+            "egMode":         eg_mode or None,
             "tags":           [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else [],
         })
     return out
 
 
 def parse_concept_texts(wb):
-    ws = wb["ConceptTexts"] if "ConceptTexts" in wb.sheetnames else None
+    ws = find_sheet(wb, "ConceptTexts")
     if not ws:
         return {}
     out = {}
@@ -307,7 +446,6 @@ def parse_concept_texts(wb):
         cid = normalize_id(cell(row, "conceptID"))
         if not cid:
             continue
-        is_default_raw = cell(row, "isDefault").lower()
         entry = {
             "conceptID": cid,
             "pov": cell(row, "pov"),
@@ -315,7 +453,7 @@ def parse_concept_texts(wb):
             "style": cell(row, "style"),
             "lang": cell(row, "lang"),
             "textVersion": cell(row, "textVersion"),
-            "isDefault": is_default_raw in ("1", "true", "sim", "yes"),
+            "isDefault": is_truthy(cell(row, "isDefault", "default")),
             "text": cell(row, "text"),
             "mediaScope": cell(row, "mediaScope"),
         }
@@ -355,6 +493,8 @@ def main():
     rows = parse_concepts_relations(wb)
     narratives = parse_narratives(wb)
     site_config = parse_site(wb)
+    templates = parse_templates(wb)
+    media = parse_media(wb)
     narrative_skins = parse_narrative_skins(wb)
     concept_skins = parse_concept_skins(wb)
     concept_texts = parse_concept_texts(wb)
@@ -365,11 +505,15 @@ def main():
         "rows": rows,
         "narratives": narratives,
         "siteConfig": site_config,
-        "media": {},
-        "templates": {},
+        "media": media,
+        "templates": templates,
         "narrativeSkins": narrative_skins,
         "conceptSkins": concept_skins,
         "conceptTexts": concept_texts,
+        # skinData is keyed by each site's skins/index.json data contracts
+        # (site-owned, fetched at runtime); the JSON fast path leaves it
+        # empty and app.js falls back to parseSkinDataContracts() against
+        # the XLSX when a skin declares a non-builtin contract.
         "skinData": {},
         "hasGraph": len(rows) > 0,
         "hasNarratives": narratives is not None and len(narratives.get("order", [])) > 0,
