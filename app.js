@@ -856,6 +856,19 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     return /\.html?$/i.test(file) ? file : file.replace(/\/?$/, "/index.html");
   }
 
+  // ── Whitelist sandbox tokens for html-embed iframes ───────────
+  // Spreadsheet-supplied values are filtered to this set; allow-same-origin
+  // and allow-top-navigation are never permitted (would neutralize the sandbox).
+  const _SANDBOX_ALLOWED = new Set([
+    "allow-scripts", "allow-popups", "allow-forms", "allow-pointer-lock"
+  ]);
+  function _sanitizeSandbox(value) {
+    const tokens = String(value || "allow-scripts")
+      .split(/\s+/)
+      .filter(function (t) { return _SANDBOX_ALLOWED.has(t); });
+    return tokens.length ? tokens.join(" ") : "allow-scripts";
+  }
+
   // ── Build a single gallery slot ──────────────────────────────
   function _buildSlot(it, i, scope, scopeID, ownerLabel) {
     const type    = String(it.type || "image").toLowerCase();
@@ -923,7 +936,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
 
     if (type === "html") {
       const src      = _htmlEmbedSrc(String(it.file || "").trim());
-      const sandbox  = it.sandbox || "allow-scripts";
+      const sandbox  = _sanitizeSandbox(it.sandbox);
       return '<div class="gallery-slot gallery-slot--html"'
         + ' data-index="' + i + '"' + arStyle + hidden + '>'
         + '<iframe src="' + escapeAttr(src) + '"'
@@ -1053,7 +1066,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           if (el.hasAttribute("hidden")) fr.setAttribute("hidden", "");
           fr.src = src;
           fr.style.cssText = "width:100%;height:100%;border:none;display:block;";
-          fr.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups");
+          fr.setAttribute("sandbox", "allow-scripts allow-popups");
           el.replaceWith(fr);
           slotEls[idx] = fr;
         } else {

@@ -305,10 +305,20 @@ def build_html(asset_paths, i18n_data):
     css = build_css()
     js  = build_js(skin_index, asset_paths, i18n_data)
 
-    # Replace <link rel="stylesheet" href="./default.css" /> with inline <style>
-    html = html.replace(
-        '<link rel="stylesheet" href="./default.css" />',
-        '<style>\n' + css + '\n</style>'
+    # Replace <link rel="stylesheet" href="./default.css?v=N" /> with inline <style>
+    html = re.sub(
+        r'<link rel="stylesheet" href="\./default\.css(?:\?v=\d+)?" />',
+        lambda _: '<style>\n' + css + '\n</style>',
+        html
+    )
+
+    # Drop the CSP meta tag: bundle.html inlines all JS into a single
+    # <script> block with no nonce/hash, which "script-src 'self'" would
+    # block, and runs under file:// where 'self' origin checks are unreliable.
+    html = re.sub(
+        r'\s*<meta http-equiv="Content-Security-Policy"[^>]*/>\n?',
+        '\n',
+        html
     )
 
     # Replace <script type="module" src="./app.js?v=3"></script> with inline <script>
