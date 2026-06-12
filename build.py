@@ -40,6 +40,8 @@ CSS_FILES = [
     "skins/concept-scrolly/concept-scrolly.css",
     "skins/scrolly-staged/scrolly-staged.css",
     "skins/scrolly-grammar-iv/scrolly-grammar-iv.css",
+    # site.css last so its :root token overrides win the cascade.
+    "site.css",
 ]
 
 # Only these extensions are included in the asset manifest and zip.
@@ -309,9 +311,17 @@ def build_html(asset_paths, i18n_data):
     js  = build_js(skin_index, asset_paths, i18n_data)
 
     # Replace <link rel="stylesheet" href="./default.css?v=N" /> with inline <style>
+    # (css already includes site.css's content, appended last in CSS_FILES)
     html = re.sub(
         r'<link rel="stylesheet" href="\./default\.css(?:\?v=\d+)?" />',
         lambda _: '<style>\n' + css + '\n</style>',
+        html
+    )
+
+    # Drop the now-redundant site.css link — its content is inlined above.
+    html = re.sub(
+        r'\s*<link rel="stylesheet" href="site\.css(?:\?v=\d+)?" />\n?',
+        '\n',
         html
     )
 
