@@ -63,6 +63,29 @@ the option is hidden to prevent errors.
 
 ---
 
+## `locales` (optional, site-owned)
+
+Sites with more than one language declare the extra locales in a top-level
+`locales` array, instead of editing the framework's `js/i18n.js` (which is
+overwritten by `sync.py`):
+
+```json
+{
+  "defaultSkin": "linear",
+  "skins": [ /* ... */ ],
+  "locales": [
+    { "code": "en", "label": "English" }
+  ]
+}
+```
+
+`code` must match the suffix used for `data/conceptual_graph.<code>.xlsx`
+and `i18n/<code>.json`. The framework's built-in `pt-BR` locale is always
+available and does not need to be listed. The language switcher stays
+hidden when only one locale is available in total.
+
+---
+
 ## Factory function convention
 
 Every skin JS file must export a factory function named

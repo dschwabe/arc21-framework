@@ -23,8 +23,19 @@ export const SK = {
   conceptSkins:   "conceptGraph.conceptSkins.v1",
   conceptTexts:   "conceptGraph.conceptTexts.v1",
   skinData:       "conceptGraph.skinData.v1",
-  sourceLabel:    "conceptGraph.sourceLabel.v1"
+  sourceLabel:    "conceptGraph.sourceLabel.v1",
+  siteConfig:     "conceptGraph.siteConfig.v1"
 };
+
+// ---- Site config (from XLSX Site sheet, persisted at import time) ----
+export function getSiteConfig() {
+  try {
+    const raw = localStorage.getItem(SK.siteConfig);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
 
 // ---- Live state object ----
 export const appStore = {

@@ -119,6 +119,7 @@ features that read `siteConfig` include the hero diagram dispatcher.
 | `hero.lede` | `Uma teia de conceitos…` | Hero subtitle |
 | `hero.root` | `C001` | conceptID of the diagram centre concept |
 | `hero.diagram` | `nebulosa` | Hero diagram renderer (see below) |
+| `site.rootConcept` | `C001` | conceptID or slug of the graph's canonical root (breadcrumbs, default landing concept) |
 
 **Hero diagram renderers** — set `hero.diagram` to one of:
 

@@ -8,7 +8,7 @@ import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, l
 import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=8";
 import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=6";
 import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=6";
-import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=6";
+import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=6";
 import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=6";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
@@ -267,6 +267,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
       const summary = $("#datasetSummary");
       if (summary) {
         if (isLoaded) {
+          const relationCount = countRelations(appStore.graph);
           const isMgmt = document.documentElement.hasAttribute('data-mgmt');
           if (isMgmt) {
             const label = (function(){ try { return localStorage.getItem(STORAGE_SOURCE_LABEL_KEY) || ""; } catch(e) { return ""; } })();
@@ -277,14 +278,14 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
               '</div>' +
               '<div class="dataset-summary-stats">' +
                 '<span><strong>' + appStore.graph.order.length + '</strong> conceitos</span>' +
-                '<span><strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</span>' +
+                '<span><strong>' + relationCount + '</strong> rela\u00e7\u00f5es</span>' +
                 (narrativeCount ? '<span><strong>' + narrativeCount + '</strong> narrativa' + (narrativeCount === 1 ? '' : 's') + '</span>' : '') +
               '</div>';
           } else {
             summary.innerHTML =
               '<p class="dataset-summary-public">' +
               '<strong>' + appStore.graph.order.length + '</strong> constela\u00e7\u00f5es (grupos de conceitos) e ' +
-              '<strong>' + countRelations(appStore.graph) + '</strong> rela\u00e7\u00f5es</p>';
+              '<strong>' + relationCount + '</strong> rela\u00e7\u00f5es</p>';
           }
         } else {
           summary.innerHTML = '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-empty">Nenhum grafo carregado</span></div>';
@@ -308,6 +309,10 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
         if (narrativesPayload && narrativesPayload.order && narrativesPayload.order.length) {
           saveStoredNarratives(narrativesPayload, _ilsk.narratives);
           narrativeMsg = " e " + narrativesPayload.order.length + " narrativa" + (narrativesPayload.order.length === 1 ? "" : "s");
+        } else {
+          // No narratives in this import — clear any stale narratives from
+          // a previous workbook so they don't reference a mismatched graph.
+          saveStoredNarratives({ byId: {}, order: [], elementsById: {}, loadedAt: "" }, _ilsk.narratives);
         }
         if (appStore.graph.sourceFormat === "xlsx" || appStore.graph.sourceFormat === "xlsx-relation-types" || sourceKind === "xlsx") {
           setStatus(dataStatus, '<strong>Dados carregados com sucesso.</strong> Arquivo: <code>' + escapeHTML(label) + '</code> &middot; ' + appStore.graph.order.length + ' conceitos' + narrativeMsg + '.', false);
@@ -1073,6 +1078,9 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           el.classList.add("gallery-image-broken");
         }
       };
+      // A cached/fast-failing image may fire "error" before the handler
+      // above was attached — check now and trigger it manually.
+      if (el.complete && !el.naturalWidth && el.onerror) el.onerror();
     });
 
     function show(i) {
@@ -1905,7 +1913,7 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           router();
         } catch (err) {
           console.error(err);
-          setStatus(narrativeImportStatus, formatCsvImportError(err, { filename: file.name }), true);
+          setStatus(narrativeImportStatus, formatCsvImportError(err, { fileLabel: file.name }), true);
         }
       });
     }
@@ -1999,6 +2007,10 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     saveStoredSkinData(result.skinData || {}, lsk.skinData);
     if (result.narratives && result.narratives.order && result.narratives.order.length) {
       saveStoredNarratives(result.narratives, lsk.narratives);
+    } else {
+      // No narratives in this import — clear any stale narratives from
+      // a previous workbook so they don't reference a mismatched graph.
+      saveStoredNarratives({ byId: {}, order: [], elementsById: {}, loadedAt: "" }, lsk.narratives);
     }
   }
 
@@ -2163,6 +2175,10 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
           saveStoredSkinData(result.skinData || {}, _clsk.skinData);
           if (result.narratives && result.narratives.order && result.narratives.order.length) {
             saveStoredNarratives(result.narratives, _clsk.narratives);
+          } else {
+            // No narratives in this import — clear any stale narratives from
+            // a previous workbook so they don't reference a mismatched graph.
+            saveStoredNarratives({ byId: {}, order: [], elementsById: {}, loadedAt: "" }, _clsk.narratives);
           }
         } else {
           const text = await new Promise(function (resolve, reject) {
@@ -2239,9 +2255,12 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
     loadHelpConfig();
     installNarrativeOverlay();
     installGlobalHandlers();
-    installLocaleSelect();
     installChangeSourceButton();
-    loadSkinIndex().then(_populateSkinSelects);
+    loadSkinIndex().then(function (index) {
+      _populateSkinSelects(index);
+      registerLocales(index && index.locales);
+      installLocaleSelect();
+    });
     window.addEventListener("hashchange", router);
     Promise.all([loadUiStrings(getLocale()), tryAutoloadDefaultData()]).then(function () {
       applyI18n(document);

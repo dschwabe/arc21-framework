@@ -4,7 +4,7 @@
  * State-dependent functions read from appStore.
  */
 
-import { appStore, SK } from "../store.js?v=6";
+import { appStore, SK, getSiteConfig } from "../store.js?v=6";
 import { slugify, normalizeConceptId } from "../utils.js?v=6";
 
 // ---- URL builders ----
@@ -48,15 +48,29 @@ export function narrativeElementUrl(narrativeID, elementID) {
 
 // ---- Graph lookups (read appStore.graph) ----
 
+// Site-configured root concept (XLSX Site sheet → siteConfig['site.rootConcept']),
+// accepting either a conceptID ("C001") or a slug. Returns null if unset/unresolved.
+function configuredRootSlug() {
+  const g = appStore.graph;
+  if (!g) return null;
+  const configured = String(getSiteConfig()['site.rootConcept'] || "").trim();
+  if (!configured) return null;
+  return resolveConceptSlug(configured);
+}
+
 export function firstConceptSlug() {
   const g = appStore.graph;
   if (!g || !g.order || !g.order.length) return null;
+  const configured = configuredRootSlug();
+  if (configured) return configured;
   return g.order.indexOf("infancia-algoritmica") >= 0 ? "infancia-algoritmica" : g.order[0];
 }
 
 export function canonicalRootSlug() {
   const g = appStore.graph;
   if (!g || !g.bySlug) return null;
+  const configured = configuredRootSlug();
+  if (configured) return configured;
   const preferred = slugify("Infância algorítmica");
   if (g.bySlug[preferred]) return preferred;
   return firstConceptSlug();

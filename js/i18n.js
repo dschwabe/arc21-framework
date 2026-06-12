@@ -3,8 +3,11 @@
  * Locale state management, per-language XLSX path resolution,
  * and UI string catalog (t / applyI18n).
  *
- * To add a new language:
- *   1. Add an entry to SUPPORTED_LOCALES.
+ * To add a new language to a site:
+ *   1. Declare it in skins/index.json (site-owned) under a top-level
+ *      "locales" array: [{ "code": "en", "label": "English" }, ...].
+ *      Do NOT edit SUPPORTED_LOCALES below — this file is framework-owned
+ *      and gets overwritten by sync.py.
  *   2. Place data/conceptual_graph.<code>.xlsx in the project.
  *   3. Place i18n/<code>.json with translated UI strings.
  *   4. The switcher, loader, and applyI18n pick it up automatically.
@@ -14,15 +17,32 @@ const LOCALE_SK = "conceptGraph.locale.v1";
 const DEFAULT_LOCALE = "pt-BR";
 
 /**
- * Declare supported locales here.
+ * Framework default locale(s).
  * code   — BCP-47 tag; must match the filename suffix and be unique.
  * label  — shown in the language switcher.
  *
- * The switcher is hidden when fewer than 2 locales are listed.
+ * Sites add to this list at runtime via registerLocales() — see the
+ * header comment above. The switcher is hidden when fewer than 2
+ * locales are registered.
  */
 export const SUPPORTED_LOCALES = [
   { code: "pt-BR", label: "Português (BR)" }
 ];
+
+/**
+ * Add site-declared locales (e.g. from skins/index.json's "locales" array)
+ * to SUPPORTED_LOCALES. Entries with a code that is already registered,
+ * or missing a code, are skipped.
+ */
+export function registerLocales(locales) {
+  if (!Array.isArray(locales)) return;
+  locales.forEach(function (loc) {
+    const code = loc && loc.code;
+    if (!code) return;
+    if (SUPPORTED_LOCALES.find(function (l) { return l.code === code; })) return;
+    SUPPORTED_LOCALES.push({ code: code, label: loc.label || code });
+  });
+}
 
 let _locale = DEFAULT_LOCALE;
 

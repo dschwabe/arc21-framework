@@ -103,8 +103,8 @@ export function buildGraph(rows) {
     if (!c.description) {
       const samples = c.relations.slice(0, 3);
       c.description = samples.length
-        ? c.concept + " relaciona-se a " + samples.map(function (r) { return "[[" + r.target + "]]"; }).join(", ") + ". Essas relações mostram como o conceito participa do grafo da infância algorítmica."
-        : c.concept + " é um conceito do grafo da infância algorítmica.";
+        ? c.concept + " relaciona-se a " + samples.map(function (r) { return "[[" + r.target + "]]"; }).join(", ") + ". Essas relações mostram como o conceito participa do grafo conceitual."
+        : c.concept + " é um conceito do grafo conceitual.";
     }
   });
 
