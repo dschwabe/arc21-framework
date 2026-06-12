@@ -13,7 +13,7 @@
 
 // ---- Storage keys (language-neutral defaults) ----
 export const SK = {
-  data:           "conceptGraph.data.v4",
+  data:           "conceptGraph.data.v5",
   history:        "conceptGraph.history.v1",
   previous:       "conceptGraph.previousConcept.v1",
   narratives:     "conceptGraph.narratives.v1",
