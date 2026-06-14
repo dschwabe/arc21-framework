@@ -10,6 +10,7 @@ import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getN
 import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=10";
 import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=10";
 import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=10";
+import { buildSearchIndex, searchAll } from "./js/search.js?v=10";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
    CSV columns accepted:
@@ -1982,6 +1983,129 @@ import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=
         historyList.innerHTML = "<p>Histórico limpo.</p>";
       });
     }
+
+    installSearch();
+  }
+
+  // ── Full-text search ────────────────────────────────────────────────────────
+  // Searches concepts and narratives (anywhere in their text), grouping results
+  // by element kind. Opens from the topbar button, Cmd/Ctrl-K, or "/".
+  function installSearch() {
+    const searchBtn      = $("#searchBtn");
+    const searchDialog   = $("#searchDialog");
+    const searchInput    = $("#searchInput");
+    const searchResults  = $("#searchResults");
+    const searchCloseBtn = $("#searchCloseBtn");
+    if (!searchDialog || !searchInput || !searchResults) return;
+
+    let _debounce = null;
+    let _active = -1;   // index into the flat list of result rows (keyboard nav)
+
+    function rows() { return searchResults.querySelectorAll(".search-result"); }
+
+    function openSearch() {
+      buildSearchIndex(appStore);   // always fresh — the corpus is tiny
+      if (typeof searchDialog.showModal === "function" && !searchDialog.open) searchDialog.showModal();
+      searchInput.value = "";
+      render("");
+      requestAnimationFrame(function () { searchInput.focus(); });
+    }
+
+    function closeSearch() { if (searchDialog.open) searchDialog.close(); }
+
+    function go(url) {
+      if (!url) return;
+      closeSearch();
+      location.hash = url;
+    }
+
+    function setActive(i) {
+      const list = rows();
+      if (!list.length) { _active = -1; return; }
+      _active = (i + list.length) % list.length;
+      list.forEach(function (r, k) {
+        const on = k === _active;
+        r.classList.toggle("active", on);
+        if (on) { r.setAttribute("aria-selected", "true"); r.scrollIntoView({ block: "nearest" }); }
+        else r.removeAttribute("aria-selected");
+      });
+    }
+
+    function render(query) {
+      const q = String(query || "").trim();
+      searchResults.innerHTML = "";
+      _active = -1;
+      if (!q) {
+        searchResults.innerHTML = '<p class="search-hint">' +
+          escapeHTML(t("search.hint", "Digite para buscar em conceitos e narrativas.")) + '</p>';
+        return;
+      }
+      const res = searchAll(q, appStore);
+      if (!res.total) {
+        searchResults.innerHTML = '<p class="search-empty">' +
+          escapeHTML(t("search.noResults", "Nenhum resultado encontrado.")) + '</p>';
+        return;
+      }
+      [
+        { label: t("search.group.concepts", "Conceitos"), items: res.concepts },
+        { label: t("search.group.narratives", "Narrativas"), items: res.narratives }
+      ].forEach(function (grp) {
+        if (!grp.items.length) return;
+        const section = document.createElement("section");
+        section.className = "search-group";
+        const h = document.createElement("h3");
+        h.className = "search-group-title";
+        h.innerHTML = escapeHTML(grp.label) + ' <span class="search-group-count">' + grp.items.length + '</span>';
+        section.appendChild(h);
+        grp.items.forEach(function (item) {
+          const row = document.createElement("a");
+          row.className = "search-result";
+          row.href = item.url;
+          row.setAttribute("role", "option");
+          let html = '<span class="search-result-title">' + escapeHTML(item.title) + '</span>';
+          if (item.context) html += '<span class="search-result-context">' + escapeHTML(item.context) + '</span>';
+          if (item.snippet) html += '<span class="search-result-snippet">' + item.snippet + '</span>';
+          row.innerHTML = html;
+          row.addEventListener("click", function (e) { e.preventDefault(); go(item.url); });
+          section.appendChild(row);
+        });
+        searchResults.appendChild(section);
+      });
+    }
+
+    searchInput.addEventListener("input", function () {
+      if (_debounce) clearTimeout(_debounce);
+      const v = searchInput.value;
+      _debounce = setTimeout(function () { render(v); }, 120);
+    });
+
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setActive(_active + 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setActive(_active - 1); }
+      else if (e.key === "Enter") {
+        e.preventDefault();
+        const list = rows();
+        const target = list[_active >= 0 ? _active : 0];
+        if (target) go(target.getAttribute("href"));
+      }
+    });
+
+    if (searchBtn) searchBtn.addEventListener("click", openSearch);
+    if (searchCloseBtn) searchCloseBtn.addEventListener("click", closeSearch);
+    searchDialog.addEventListener("click", function (e) { if (e.target === searchDialog) closeSearch(); });
+
+    // Global shortcut: Cmd/Ctrl-K anywhere, or "/" when not typing in a field.
+    document.addEventListener("keydown", function (e) {
+      const metaK = (e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K");
+      const slash = e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey;
+      if (!metaK && !slash) return;
+      if (searchDialog.open) return;
+      const ae = document.activeElement;
+      const typing = ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.tagName === "SELECT" || ae.isContentEditable);
+      if (slash && typing) return;
+      e.preventDefault();
+      openSearch();
+    });
   }
 
   function showFatalError(message, error) {

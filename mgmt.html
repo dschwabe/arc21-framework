@@ -21,6 +21,7 @@
 
     <nav class="nav">
       <a href="#/" class="nav-link" data-i18n="nav.home">Home</a>
+      <button id="searchBtn" class="nav-button" type="button" data-i18n="search.button" data-i18n-title="search.button.title" title="Buscar (atalho: / ou Ctrl/⌘+K)">Buscar</button>
       <button id="backBtn" class="nav-button" type="button" data-i18n="nav.back">Voltar</button>
       <button id="historyBtn" class="nav-button" type="button" data-i18n="nav.history">Histórico</button>
       <button id="changeSourceBtn" class="nav-button mgmt-only" type="button" title="Trocar arquivo de dados" data-i18n="nav.changeSource" data-i18n-title="nav.changeSource.title">Trocar arquivo</button>
@@ -32,6 +33,18 @@
   </header>
 
   <main id="app" class="app" aria-live="polite"></main>
+
+  <dialog id="searchDialog" class="dialog search-dialog" aria-label="Busca">
+    <div class="search-input-row">
+      <input id="searchInput" class="search-input" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Buscar conceitos e narrativas…"
+             data-i18n-placeholder="search.placeholder"
+             data-i18n-aria="search.placeholder"
+             aria-label="Buscar conceitos e narrativas" aria-controls="searchResults" />
+      <button id="searchCloseBtn" class="icon-button" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
+  </dialog>
 
   <dialog id="historyDialog" class="dialog">
     <form method="dialog">

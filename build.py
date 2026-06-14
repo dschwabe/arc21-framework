@@ -21,6 +21,7 @@ JS_FILES = [
     "js/graph/builder.js",
     "js/graph/navigation.js",
     "js/render/content.js",
+    "js/search.js",
     "js/explore-graph.js",
     "js/skin/loader.js",
     "skins/concept-default/concept-default.js",

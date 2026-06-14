@@ -1249,6 +1249,94 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   background: var(--panel-2);
 }
 
+/* ---------- Search dialog (command-palette style) ---------- */
+.search-dialog {
+  width: min(640px, calc(100vw - 2rem));
+  margin-top: 9vh;
+  padding: 0;
+  overflow: hidden;
+}
+.search-input-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.7rem 0.55rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.search-input {
+  flex: 1; min-width: 0;
+  border: 0; outline: none; background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  padding: 0.4rem 0.2rem;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.search-input-row .icon-button { font-size: 1.6rem; line-height: 1; }
+
+.search-results {
+  max-height: min(60vh, 520px);
+  overflow: auto;
+  padding: 0.4rem;
+}
+.search-hint, .search-empty {
+  margin: 0; padding: 1.4rem 1rem;
+  color: var(--muted); text-align: center; font-size: 0.95rem;
+}
+.search-group { margin: 0.3rem 0 0.5rem; }
+.search-group-title {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin: 0.5rem 0.65rem 0.3rem;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.search-group-count {
+  font-size: 0.68rem; font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+.search-result {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+.search-result:hover,
+.search-result.active {
+  background: var(--panel-2);
+  border-color: var(--line-strong);
+}
+.search-result-title {
+  display: block;
+  font-weight: 600; font-size: 0.98rem;
+  color: var(--ink-strong);
+}
+.search-result-context {
+  display: block;
+  font-size: 0.74rem; color: var(--muted);
+  margin-top: 0.1rem;
+}
+.search-result-snippet {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.84rem; color: var(--muted-2);
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+.search-result-title mark,
+.search-result-snippet mark {
+  background: var(--accent-soft);
+  color: var(--link-hover);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
 /* ---------- Help dialog content ---------- */
 .help-content { display: grid; gap: 1rem; margin: 1rem 0; }
 .help-section {
