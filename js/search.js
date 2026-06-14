@@ -10,7 +10,7 @@
 // finds "Território". Each result carries an HTML snippet with the matched terms
 // wrapped in <mark>.
 
-import { conceptUrl, narrativeUrl, narrativeElementUrl } from "./graph/navigation.js?v=10";
+import { conceptUrl, narrativeUrl, narrativeElementUrl, resolveWikiTarget } from "./graph/navigation.js?v=10";
 import { getConceptTexts } from "./store.js?v=10";
 import { escapeHTML } from "./utils.js?v=10";
 
@@ -42,22 +42,27 @@ function escapeRegex(s) {
 
 // Strip narrative grammar markup and wiki-link syntax so indexed/snippet text is
 // clean prose: ##giv key=val ...## frontmatter, ##title2##…## / ##inline-title##…##
-// markers, and [[target|label]] → label · [[target]] → target.
-// (Wiki-link regex mirrors the one in js/render/content.js.)
-export function stripMarkup(s) {
+// markers, and [[target|label]] → label · [[target]] → resolveTarget(target) (the
+// referenced concept's title, matching what the renderer displays) or the raw
+// target if it doesn't resolve. (Wiki-link regex mirrors js/render/content.js.)
+export function stripMarkup(s, resolveTarget) {
   return String(s == null ? "" : s)
     .replace(/##giv\s+[^#]*?##/gi, " ")            // giv frontmatter (has spaces)
     .replace(/##[a-z0-9_-]+##/gi, " ")             // single-token markers
     .replace(/##/g, " ")                            // stray delimiters
-    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, function (_, a, b) { return b || a; })
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, function (_, a, b) {
+      if (b) return b;
+      const resolved = resolveTarget && resolveTarget(a.trim());
+      return resolved || a;
+    })
     .replace(/\s+/g, " ")
     .trim();
 }
 
 // ── Index construction ──────────────────────────────────────────────────────
 
-function pushField(fields, text, weight) {
-  const clean = stripMarkup(text);
+function pushField(fields, text, weight, resolveTarget) {
+  const clean = stripMarkup(text, resolveTarget);
   if (clean) fields.push({ text: clean, weight: weight });
 }
 
@@ -81,6 +86,13 @@ function firstWords(s, n) {
 export function buildSearchIndex(appStore) {
   const records = [];
 
+  // Resolve a bare [[target]] wiki-link to the referenced concept's title, matching
+  // what the renderer displays (resolveWikiTarget reads appStore.graph internally).
+  function resolveTarget(target) {
+    const wt = resolveWikiTarget(target);
+    return wt && wt.label;
+  }
+
   // ── Concepts: one record per concept, aggregating all its text ──
   const g = appStore.graph;
   if (g && g.order && g.bySlug) {
@@ -88,19 +100,19 @@ export function buildSearchIndex(appStore) {
       const c = g.bySlug[slug];
       if (!c) return;
       const fields = [];
-      pushField(fields, c.concept, 10);            // title
-      pushField(fields, c.description, 5);
+      pushField(fields, c.concept, 10, resolveTarget);            // title
+      pushField(fields, c.description, 5, resolveTarget);
       (c.relations || []).forEach(function (r) {
-        pushField(fields, r.relationName, 2);
-        pushField(fields, r.explanation, 3);
-        pushField(fields, r.relationTypeDescription, 1);
+        pushField(fields, r.relationName, 2, resolveTarget);
+        pushField(fields, r.explanation, 3, resolveTarget);
+        pushField(fields, r.relationTypeDescription, 1, resolveTarget);
       });
       // POV concept texts — the richest prose, keyed by conceptID.
       if (c.conceptID) {
         getConceptTexts(c.conceptID).forEach(function (t) {
-          pushField(fields, t.text, 4);
-          pushField(fields, t.pov, 1);
-          pushField(fields, t.author, 1);
+          pushField(fields, t.text, 4, resolveTarget);
+          pushField(fields, t.pov, 1, resolveTarget);
+          pushField(fields, t.author, 1, resolveTarget);
         });
       }
       if (fields.length) {
@@ -127,12 +139,12 @@ export function buildSearchIndex(appStore) {
       const n = ns.byId[nid];
       if (!n || n.hidden) return;
       const fields = [];
-      pushField(fields, n.narrativeTitle, 10);
-      pushField(fields, n.subtitle, 5);
-      pushField(fields, n.eyebrow, 3);
-      pushField(fields, n.narrativeSummary, 4);
-      pushField(fields, n.outroQuote, 2);
-      pushField(fields, n.outroMeta, 1);
+      pushField(fields, n.narrativeTitle, 10, resolveTarget);
+      pushField(fields, n.subtitle, 5, resolveTarget);
+      pushField(fields, n.eyebrow, 3, resolveTarget);
+      pushField(fields, n.narrativeSummary, 4, resolveTarget);
+      pushField(fields, n.outroQuote, 2, resolveTarget);
+      pushField(fields, n.outroMeta, 1, resolveTarget);
       if (fields.length) {
         records.push(makeRecord("narrative", n.narrativeTitle || nid, "", narrativeUrl(nid), fields));
       }
@@ -148,11 +160,11 @@ export function buildSearchIndex(appStore) {
         const parent = ns.byId[nid];
         if (parent && parent.hidden) return;
         const fields = [];
-        pushField(fields, el.elementTitle, 6);
-        pushField(fields, el.elementContent, 4);
+        pushField(fields, el.elementTitle, 6, resolveTarget);
+        pushField(fields, el.elementContent, 4, resolveTarget);
         if (!fields.length) return;
-        const title = stripMarkup(el.elementTitle) ||
-                      firstWords(stripMarkup(el.elementContent), 6) || eid;
+        const title = stripMarkup(el.elementTitle, resolveTarget) ||
+                      firstWords(stripMarkup(el.elementContent, resolveTarget), 6) || eid;
         const context = parent ? parent.narrativeTitle : "";
         records.push(makeRecord("narrative", title, context, narrativeElementUrl(nid, eid), fields));
       });
