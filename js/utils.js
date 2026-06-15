@@ -100,6 +100,21 @@ export function get(row, names) {
   return "";
 }
 
+// Returns an object of all non-empty columns in `row` whose normalised header
+// is NOT covered by any alias in `knownAliases`. Used to populate .extra on
+// concepts, relations, and relation types (Change 1 — preserve unknown columns).
+export function extraFrom(row, knownAliases) {
+  const skip = new Set(knownAliases.map(normalizeHeader));
+  const result = {};
+  Object.keys(row).forEach(function (k) {
+    if (!skip.has(normalizeHeader(k))) {
+      const v = String(row[k] == null ? "" : row[k]).trim();
+      if (v !== "") result[k] = v;
+    }
+  });
+  return result;
+}
+
 export function makeCsvImportError(message, fix, details) {
   const err = new Error(message);
   err.name = "CsvImportError";

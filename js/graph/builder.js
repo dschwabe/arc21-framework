@@ -6,7 +6,30 @@
  * Depends on js/utils.js.
  */
 
-import { slugify, normalizeConceptId, get, makeCsvImportError } from "../utils.js?v=10";
+import { slugify, normalizeConceptId, get, extraFrom, makeCsvImportError } from "../utils.js?v=11";
+
+// All column aliases consumed by this module — used to compute .extra for flat
+// CSV rows (XLSX rows arrive with .extra already set by js/parse/workbook.js).
+const BUILDER_KNOWN_ALIASES = [
+  "concept", "conceito", "sourceConcept", "Concept extracted from text",
+  "ConceptLabel", "conceptLabel",
+  "conceptID", "ConceptID", "ConceptId", "id",
+  "relatedConcept", "related concept", "Related concept", "conceito relacionado",
+  "relatedConceptID", "RelatedConceptID", "targetConceptID", "targetConceptId",
+  "relationTypeID", "RelationTypeID", "relationTypeId", "RelationTypeId", "relationID", "RelationID",
+  "relationCategory", "category", "Category", "categoria",
+  "relationTypeDescription", "relationDescription", "descriptionOfRelationType",
+  "relationName", "relationType", "Relation type", "Relation name", "relação", "relacao",
+  "description", "descrição", "descricao",
+  "conceptDescription", "briefDescription",
+  "explanation", "explanation/justification of why the concepts are related", "justification",
+  "explicação", "explicacao",
+  "sourceUrl", "source URL", "source", "url", "postUrl", "post URL", "souceUrl", "souce URL",
+  "imagePath", "image", "snapshot", "snapshotPath", "screenshot", "screenshotPath",
+  "sourceTitle", "postTitle", "source title",
+  "level", "Level", "camada", "Camada",
+  "externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"
+];
 
 /**
  * Build a graph from an array of row objects.
@@ -35,6 +58,7 @@ export function buildGraph(rows) {
         level: "",
         camada: "",
         externalRef: "",
+        extra: {},
         relations: []
       };
       order.push(slug);
@@ -74,6 +98,12 @@ export function buildGraph(rows) {
     if (camada && !concept.camada) concept.camada = camada;
     if (externalRef && !concept.externalRef) concept.externalRef = externalRef;
 
+    // Merge extra columns — pre-computed for XLSX rows, computed here for CSV rows.
+    const _extra = row.extra !== undefined ? row.extra : extraFrom(row, BUILDER_KNOWN_ALIASES);
+    Object.keys(_extra).forEach(function (k) {
+      if (concept.extra[k] === undefined) concept.extra[k] = _extra[k];
+    });
+
     if (relatedName) {
       const related = ensureConcept(relatedName);
       if (relatedConceptID && !related.conceptID) { related.conceptID = relatedConceptID; idToSlug[relatedConceptID] = related.slug; }
@@ -85,7 +115,9 @@ export function buildGraph(rows) {
         relationName: relationName,
         relationCategory: relationCategory,
         relationTypeDescription: relationTypeDescription,
-        explanation: explanation
+        explanation: explanation,
+        extra: row.relationExtra || {},
+        relationTypeExtra: row.relationTypeExtra || {}
       });
     }
   });

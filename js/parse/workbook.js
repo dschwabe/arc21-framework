@@ -8,11 +8,36 @@ import {
   unzipXlsxEntries, zipText, readSharedStrings, readWorkbookSheets,
   worksheetToMatrix, matrixToObjects,
   hasColumns, formatSheetDiagnostics, getSheetInfoByName
-} from "./xlsx.js?v=10";
+} from "./xlsx.js?v=11";
 
 import {
-  get, normalizeConceptId, makeSpreadsheetImportError
-} from "../utils.js?v=10";
+  get, extraFrom, normalizeConceptId, makeSpreadsheetImportError
+} from "../utils.js?v=11";
+
+// Known aliases per sheet — used to identify columns that should land in .extra.
+const CONCEPT_KNOWN_ALIASES = [
+  "conceptID", "ConceptID", "ConceptId", "id",
+  "ConceptLabel", "conceptLabel", "label", "Concept", "concept",
+  "description", "Description", "descrição", "descricao",
+  "sourceUrl", "souceUrl", "url", "postUrl",
+  "imagePath", "ImagePath", "snapshot", "screenshot",
+  "sourceTitle", "SourceTitle", "postTitle", "source",
+  "level", "Level", "camada", "Camada",
+  "externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"
+];
+const RELTYPE_KNOWN_ALIASES = [
+  "relationID", "relationTypeID", "RelationID", "id",
+  "relationType", "relationName", "RelationType", "name", "label",
+  "category", "Category", "categoria",
+  "description", "Description", "descrição", "descricao"
+];
+const RELATION_KNOWN_ALIASES = [
+  "ConceptId", "ConceptID", "conceptID", "conceptId", "source",
+  "relatedConcept", "RelatedConcept", "relatedConceptID", "targetConceptId", "target",
+  "relationTypeID", "RelationTypeID", "relationTypeId", "RelationTypeId", "relationID", "RelationID",
+  "explanation", "Explanation", "explicação", "explicacao",
+  "relationName", "RelationName", "relação", "relacao"
+];
 
 // Re-export for callers that only import workbook.
 export { hasColumns, getSheetInfoByName };
@@ -99,7 +124,8 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
         relationID: relationID,
         relationType: relationType,
         category: get(row, ["category", "Category", "categoria"]),
-        description: get(row, ["description", "Description", "descrição", "descricao"])
+        description: get(row, ["description", "Description", "descrição", "descricao"]),
+        extra: extraFrom(row, RELTYPE_KNOWN_ALIASES)
       };
     });
     if (!Object.keys(relationTypesById).length) {
@@ -124,7 +150,8 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       sourceTitle: get(row, ["sourceTitle", "SourceTitle", "postTitle", "source"]),
       level: get(row, ["level", "Level"]),
       camada: get(row, ["camada", "Camada"]),
-      externalRef: get(row, ["externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"])
+      externalRef: get(row, ["externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"]),
+      extra: extraFrom(row, CONCEPT_KNOWN_ALIASES)
     };
     conceptOrder.push(id);
   });
@@ -157,7 +184,10 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       relationName: relationName || relationTypeID,
       explanation: get(row, ["explanation", "Explanation", "explicação", "explicacao"]),
       sourceUrl: source.sourceUrl, imagePath: source.imagePath, sourceTitle: source.sourceTitle,
-      level: source.level, camada: source.camada, externalRef: source.externalRef
+      level: source.level, camada: source.camada, externalRef: source.externalRef,
+      extra: source.extra || {},
+      relationExtra: extraFrom(row, RELATION_KNOWN_ALIASES),
+      relationTypeExtra: relationTypeInfo ? (relationTypeInfo.extra || {}) : {}
     });
   });
   conceptOrder.forEach(function (id) {
@@ -168,7 +198,10 @@ export async function parseCombinedWorkbook(arrayBuffer, options) {
       relatedConceptID: "", relatedConcept: "", relationTypeID: "", relationCategory: "",
       relationTypeDescription: "", relationName: "", explanation: "",
       sourceUrl: c.sourceUrl, imagePath: c.imagePath, sourceTitle: c.sourceTitle,
-      level: c.level, camada: c.camada, externalRef: c.externalRef
+      level: c.level, camada: c.camada, externalRef: c.externalRef,
+      extra: c.extra || {},
+      relationExtra: {},
+      relationTypeExtra: {}
     });
   });
   outputRows._sourceFormat = relationHasTypeId ? "xlsx-relation-types" : "xlsx";

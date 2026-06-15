@@ -9,7 +9,7 @@ If no path is given, the last-used path is read from framework.lock.
 Run with --check to report whether the framework has updates without syncing.
 """
 
-import os, shutil, json, subprocess, sys
+import os, shutil, json, subprocess, sys, hashlib
 from datetime import datetime, timezone
 
 # ── Site-owned files and folders — never overwritten by sync ──────────────
@@ -56,6 +56,14 @@ def _should_skip_file(name):
     return name.startswith(".") or name.startswith("Icon") or name.endswith(".bak")
 
 
+def _file_hash(path):
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def copy_dir(src, dst, top):
     """Copy src directory to dst, respecting SUBPATH_OWNED.
 
@@ -63,9 +71,16 @@ def copy_dir(src, dst, top):
     so SUBPATH_OWNED entries like skins/index.json are compared against the
     full site-relative path. (A bug here once compared bare filenames, so
     the protection silently never applied and site files were clobbered.)
+
+    Change 5 — collision detection: if the framework is about to overwrite a
+    site file that is NOT in SITE_OWNED or SUBPATH_OWNED and has been locally
+    modified, we report it rather than silently clobbering. The copy still
+    proceeds — this is a report, not a block — so the framework wins and the
+    site maintainer can decide whether to add the file to SUBPATH_OWNED.
     """
     os.makedirs(dst, exist_ok=True)
     skipped_owned = []
+    collisions = []
     for root, dirs, files in os.walk(src):
         rel_root = os.path.relpath(root, src)
         for fname in files:
@@ -79,7 +94,15 @@ def copy_dir(src, dst, top):
             src_file = os.path.join(root, fname)
             dst_file = os.path.join(dst, os.path.relpath(rel_file, top))
             os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            # Detect silent overwrites of locally modified files.
+            if os.path.exists(dst_file) and _file_hash(src_file) != _file_hash(dst_file):
+                collisions.append(rel_file)
             shutil.copy2(src_file, dst_file)
+    if collisions:
+        print(f"  ⚠  Framework overwrote {len(collisions)} locally-modified file(s):")
+        for c in sorted(collisions):
+            print(f"       {c}")
+        print(f"     To protect a file, add it to SUBPATH_OWNED in this sync.py.")
     return skipped_owned
 
 
@@ -115,6 +138,7 @@ def sync(framework_path, site_path="."):
         "framework_commit_message": git_log_oneline(framework_path, version),
         "synced_at": datetime.now(timezone.utc).isoformat(),
         "framework_path": framework_path,
+        "merge_semantics_version": 1,
     }
     with open(os.path.join(site_path, "framework.lock"), "w") as f:
         json.dump(lock, f, indent=2)

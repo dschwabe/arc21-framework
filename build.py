@@ -19,6 +19,7 @@ JS_FILES = [
     "js/parse/xlsx.js",
     "js/parse/workbook.js",
     "js/graph/builder.js",
+    "js/graph/merger.js",
     "js/graph/navigation.js",
     "js/render/content.js",
     "js/search.js",
