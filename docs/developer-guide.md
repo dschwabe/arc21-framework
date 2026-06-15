@@ -35,15 +35,16 @@
 14. [Skin module API](#reference-skin-module-api)
 15. [Asset discovery — `loadSkinAssets` and `urls.txt`](#reference-asset-discovery)
 16. [`appStore` and storage keys](#reference-appstore)
-17. [CSS design tokens](#reference-css-tokens)
-18. [Module dependency graph](#reference-module-graph)
+17. [Full-text search](#reference-full-text-search)
+18. [CSS design tokens](#reference-css-tokens)
+19. [Module dependency graph](#reference-module-graph)
 
 ### Explanation
-19. [Architecture overview](#explanation-architecture)
-20. [The graph model: slugs, IDs and relations](#explanation-graph-model)
-21. [The narrative model: overlays, elements and skins](#explanation-narrative-model)
-22. [The skin system: lazy loading and the context object](#explanation-skin-system)
-23. [Data flow: from spreadsheet to rendered page](#explanation-data-flow)
+20. [Architecture overview](#explanation-architecture)
+21. [The graph model: slugs, IDs and relations](#explanation-graph-model)
+22. [The narrative model: overlays, elements and skins](#explanation-narrative-model)
+23. [The skin system: lazy loading and the context object](#explanation-skin-system)
+24. [Data flow: from spreadsheet to rendered page](#explanation-data-flow)
 
 ---
 
@@ -1278,7 +1279,9 @@ appStore = {
   skinDataStore:       {},     // keyed by contract type → keyed by ID
   currentConceptSlug:  null,
   helpConfig:          null,   // loaded from help-config.json + DEFAULT_HELP_CONFIG
-  helpConfigPromise:   null
+  helpConfigPromise:   null,
+  searchIndex:         null,   // built by buildSearchIndex(); array of search records
+  searchVocab:         null    // word-frequency table for "did you mean" suggestions
 }
 ```
 
@@ -1298,6 +1301,54 @@ appStore = {
 | `SK.skinData` | `conceptGraph.skinData.v1` | Generic contract-driven data |
 
 **Locale scoping:** when the active locale is not `pt-BR`, `localeSK(locale)` returns scoped keys (e.g. `conceptGraph.data.v4.en`). This allows the same browser to store graphs in multiple languages without collision.
+
+---
+
+## Reference: Full-text search
+
+**Module:** `js/search.js` — pure data module, no DOM, no fetch. Works
+identically in the live site and `bundle.html`.
+
+**`buildSearchIndex(appStore)`** rebuilds `appStore.searchIndex` (a flat
+array of `{ kind, title, context, url, fields, haystack }` records covering
+every concept and narrative/element) and `appStore.searchVocab` (a
+word-frequency table used for suggestions). `installSearch()` in `app.js`
+calls this every time the search dialog opens — the corpus is small enough
+that rebuilding is cheaper than tracking invalidation.
+
+**`searchAll(query, appStore)`** tokenizes the query with `normalizeText()`
+(lowercase, diacritics stripped) and AND-matches every term as a substring of
+each record's `haystack`. Returns:
+
+```js
+{ concepts: [...], narratives: [...], total: N, suggestions: [...] }
+```
+
+Each result is `{ kind, title, context, url, score, snippet }`, where
+`snippet` is HTML with matched terms wrapped in `<mark>` (`makeSnippet`).
+
+**"Did you mean":** when `total === 0`, for every query term with zero
+substring hits anywhere in the index, `searchAll` finds the closest word(s)
+in `appStore.searchVocab` by Levenshtein distance (tolerance grows with term
+length) and rebuilds the query with that term corrected. `suggestions` is a
+list of `{ word, query }`, capped at 5, rendered as clickable pills that
+re-run the search.
+
+**Other exports:**
+
+| Export | Purpose |
+|---|---|
+| `normalizeText(s)` | Lowercase + NFD + strip diacritics + collapse whitespace |
+| `stripMarkup(s, resolveTarget)` | Remove `##…##` grammar markup; `[[a\|b]]` → `b`; bare `[[a]]` → `resolveTarget(a)` or `a` |
+| `makeSnippet(cleanText, terms)` | Word-windowed HTML snippet with `<mark>` highlights |
+
+**UI:** `installSearch()` in `app.js` binds `#searchBtn`, `Cmd/Ctrl-K`, and
+`/` (when not typing in a field) to open `<dialog id="searchDialog">`,
+debounces input (120 ms), and renders results grouped under
+`search.group.concepts` / `search.group.narratives`. ↑/↓ moves the active
+result, `Enter` navigates, Esc/outside-click closes. See
+[architecture.md](architecture.md) for the full behaviour table and the i18n
+key reference.
 
 ---
 
@@ -1347,6 +1398,14 @@ index.html
         ├── js/graph/navigation.js
         │     ├── js/store.js
         │     └── js/utils.js
+        ├── js/search.js
+        │     ├── js/graph/navigation.js
+        │     ├── js/store.js
+        │     └── js/utils.js
+        ├── js/explore-graph.js
+        │     ├── js/graph/navigation.js
+        │     ├── js/utils.js
+        │     └── js/i18n.js
         ├── js/render/content.js
         ├── js/skin/loader.js          ← lazy-loads skin modules below
         │     └── (dynamic imports)

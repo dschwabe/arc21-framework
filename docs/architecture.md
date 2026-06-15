@@ -11,21 +11,28 @@ There is no bundler, no transpiler, and no runtime framework.
 ```
 index.html          ← shell; loads app.js as type="module"
 app.js              ← application entry point; routing, data loading, skin dispatch
-explore-graph.js    ← floating Explore Graph panel (visit history → live concept map)
 default.css         ← global base styles and CSS custom properties (tokens)
 
 js/
   store.js          ← shared mutable state (appStore) and localStorage helpers
   i18n.js           ← translation loader and helpers
   help.js           ← tooltip/help overlay system
+  version.js        ← ARC21_VERSION (cache-busting ?v=N for all module imports)
+  search.js         ← full-text search index + "did you mean" suggestions
+  explore-graph.js  ← floating Explore Graph panel (visit history → live concept map)
+  parse/
+    xlsx.js         ← low-level XLSX (OOXML ZIP) binary reader
+    csv.js          ← CSV delimiter detection and parsing
+    workbook.js     ← high-level XLSX → row objects (parseCombinedWorkbook)
   graph/
-    parser.js       ← XLSX → graph object
+    builder.js      ← row objects → graph object (buildGraph)
     navigation.js   ← URL builders (conceptUrl, narrativeElementUrl, …)
   render/
     content.js      ← linkifyDescription and inline text helpers
     gallery.js      ← buildGalleryHtml and wireUpGallery
   skin/
     loader.js       ← skin lifecycle: CSS injection, JS lazy-load, asset probing
+  diagram/          ← hero/relations diagram renderers (see hero-diagram-tutorial.md)
   utils.js          ← escapeHTML, escapeAttr, misc
 
 skins/
@@ -57,21 +64,26 @@ index.html
     app.js
       1. Load stored data from localStorage (graph, narratives, media, skins, …)
       2. Fetch data/{locale}/conceptual_graph.xlsx  (or fallback locale)
-         → parse with js/graph/parser.js
+         → parse with js/parse/workbook.js  (parseCombinedWorkbook)
+         → build graph with js/graph/builder.js  (buildGraph)
          → save to localStorage
       3. Load i18n strings
       4. Register hashchange listener
       5. Dispatch initial route (window.location.hash)
 ```
 
-Routes are matched by prefix:
+Routes are matched against `location.hash` by `router()`:
 
-| Hash prefix | Handler |
+| Hash pattern | Handler |
 |-------------|---------|
-| `#concept/` | `showConcept(slug)` |
-| `#narrative/` | `showNarrative(id, elementID)` |
-| `#search` | `showSearch(query)` |
-| *(empty)* | `showHome()` |
+| `#/concept/<slugOrID>` | `renderConcept(slug, skin)` |
+| `#/narrative/<id>` | `_renderWithSkin(narrativeID, skinID)` |
+| `#/narrative/<id>/element/<elementID>` | `renderNarrativeElement(narrativeID, elementID, highlight)` |
+| *(empty / no match)* | `renderHero()` |
+
+Full-text search (`js/search.js`) is **not** a route — it's a `<dialog>`
+overlay opened via the search button or a keyboard shortcut. See
+[Full-text search](#full-text-search-jssearchjs) below.
 
 ---
 
@@ -79,7 +91,8 @@ Routes are matched by prefix:
 
 ```
 XLSX file
-  → parser.js → graph object (bySlug, concepts[], relations[])
+  → js/parse/workbook.js (parseCombinedWorkbook) → row objects
+  → js/graph/builder.js (buildGraph) → graph object (bySlug, order, idToSlug, …)
   → saved to localStorage (SK.data)
   → appStore.graph
 
@@ -146,8 +159,8 @@ All navigation is via `window.location.hash`. `app.js` listens for
 URL helpers live in `js/graph/navigation.js`:
 
 ```js
-conceptUrl(slug)                  // → "#concept/slug"
-narrativeElementUrl(nid, eid)     // → "#narrative/N002/E007"
+conceptUrl(slug)                  // → "#/concept/C051" (ID form, falls back to slug)
+narrativeElementUrl(nid, eid)     // → "#/narrative/N002/element/E007"
 ```
 
 Use these helpers everywhere rather than constructing hash strings manually.
@@ -222,6 +235,72 @@ setMode("hidden" | "minimized" | "normal");  // called by app.js on route change
 
 ---
 
+## Full-text search (`js/search.js`)
+
+A pure data module (no DOM) providing accent- and case-insensitive search
+over every concept and narrative already held in memory — no fetch, so it
+works identically in the live site and the offline `bundle.html`.
+
+### Index
+
+`buildSearchIndex(appStore)` flattens the graph and narrative stores into
+`appStore.searchIndex`, an array of records:
+
+```js
+{ kind: "concept" | "narrative", title, context, url, fields: [{text, weight}], haystack }
+```
+
+- `fields` covers titles, descriptions, relation explanations, POV concept
+  texts, and narrative/element prose — each cleaned with `stripMarkup()`,
+  which strips `##…##` grammar markup and resolves bare `[[conceptID]]`
+  wikilinks to the target concept's title (via `resolveWikiTarget`).
+- `haystack` is the `normalizeText()`-folded concatenation of all fields,
+  used for fast substring matching.
+- `buildSearchIndex` also builds `appStore.searchVocab`, a word-frequency
+  table over the same text, used for suggestions (below).
+
+The index is rebuilt from scratch every time the search dialog opens — the
+corpus is small enough that this is cheaper than invalidation tracking.
+
+### Query
+
+`searchAll(query, appStore)` tokenizes the (normalized) query into terms and
+returns `{ concepts, narratives, total, suggestions }`. A record matches only
+if **every** term is a substring of its `haystack` (AND). Matches are scored
+by occurrence count × field weight plus a whole-word bonus, and each result
+carries an HTML snippet (`makeSnippet`) with matched terms wrapped in
+`<mark>`.
+
+### "Did you mean" suggestions
+
+When a query matches nothing, `searchAll` looks at each term with zero
+substring hits anywhere in the index and finds the closest word(s) in
+`appStore.searchVocab` by Levenshtein distance (tolerance grows with term
+length: ≤4 chars → 1, ≤8 → 2, else → 3). For each near match it rebuilds the
+full query with just that term substituted, up to 5 suggestions total. These
+render as clickable pills that re-run the search with the corrected query.
+
+### UI
+
+The search UI lives in `installSearch()` in `app.js`, backed by
+`<dialog id="searchDialog">` in `index.html`:
+
+| Trigger | Action |
+|---------|--------|
+| `#searchBtn` click | Open dialog |
+| `Cmd/Ctrl-K` (anywhere) | Open dialog |
+| `/` (when not typing in a field) | Open dialog |
+| ↑ / ↓ | Move active result |
+| `Enter` | Navigate to active (or first) result |
+| Esc / click outside | Close dialog |
+
+Results are grouped under "Conceitos" / "Narrativas" headings
+(`search.group.concepts` / `search.group.narratives`); an empty query shows
+`search.hint`, a zero-result query shows `search.noResults` plus any
+suggestion pills under `search.didYouMean`.
+
+---
+
 ## Template system
 
 HTML `<template>` elements in `index.html` are cloned for each render.
@@ -275,6 +354,14 @@ strings. Every key has a hardcoded fallback so the file is optional. Known keys:
 | `concept.skinSelect.title` | `Visual` |
 | `concept.povSwitcher.title` | `P. de vista` |
 | `eg.title` | `Mapa de exploração` |
+| `search.button` | `Buscar` |
+| `search.button.title` | `Buscar em conceitos e narrativas (atalho: / ou Ctrl/⌘+K)` |
+| `search.placeholder` | `Buscar conceitos e narrativas…` |
+| `search.hint` | `Digite para buscar em conceitos e narrativas.` |
+| `search.noResults` | `Nenhum resultado encontrado.` |
+| `search.didYouMean` | `Você quis dizer:` |
+| `search.group.concepts` | `Conceitos` |
+| `search.group.narratives` | `Narrativas` |
 
 ---
 
@@ -282,7 +369,7 @@ strings. Every key has a hardcoded fallback so the file is optional. Known keys:
 
 | Goal | Where to change |
 |------|----------------|
-| New content type | Add a tab to the XLSX; add a parser in `js/graph/parser.js`; add a store helper in `js/store.js` |
+| New content type | Add a tab to the XLSX; add a row parser in `js/parse/workbook.js`; extend `js/graph/builder.js`; add a store helper in `js/store.js` |
 | New page layout | Add a skin (see [Skin System](skin-system.md)) |
 | New asset slot | Extend `loadSkinAssets` in `js/skin/loader.js` |
 | New tooltip | Add an entry to `data/help.json` |
