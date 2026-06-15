@@ -2042,8 +2042,26 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=10";
       }
       const res = searchAll(q, appStore);
       if (!res.total) {
-        searchResults.innerHTML = '<p class="search-empty">' +
+        let html = '<p class="search-empty">' +
           escapeHTML(t("search.noResults", "Nenhum resultado encontrado.")) + '</p>';
+        if (res.suggestions.length) {
+          html += '<p class="search-suggestions">' +
+            escapeHTML(t("search.didYouMean", "Você quis dizer:")) + ' ' +
+            res.suggestions.map(function (s) {
+              return '<button class="search-suggestion" type="button" data-query="' +
+                escapeHTML(s.query) + '">' + escapeHTML(s.query) + '</button>';
+            }).join("") +
+            '</p>';
+        }
+        searchResults.innerHTML = html;
+        searchResults.querySelectorAll(".search-suggestion").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            const v = btn.getAttribute("data-query");
+            searchInput.value = v;
+            render(v);
+            searchInput.focus();
+          });
+        });
         return;
       }
       [

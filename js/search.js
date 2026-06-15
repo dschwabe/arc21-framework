@@ -81,6 +81,61 @@ function firstWords(s, n) {
   return w.length <= n ? w.join(" ") : w.slice(0, n).join(" ") + "…";
 }
 
+// ── Fuzzy "did you mean" suggestions ────────────────────────────────────────
+
+const MIN_SUGGEST_LEN = 3;
+
+// Word frequency table over all indexed text, used to suggest corrections for
+// queries that match nothing. Short/common tokens are excluded.
+function buildVocabulary(records) {
+  const counts = new Map();
+  records.forEach(function (rec) {
+    rec.fields.forEach(function (f) {
+      normalizeText(f.text).split(/[^a-z0-9]+/).forEach(function (w) {
+        if (w.length < MIN_SUGGEST_LEN) return;
+        counts.set(w, (counts.get(w) || 0) + 1);
+      });
+    });
+  });
+  return Array.from(counts, function (e) { return { word: e[0], count: e[1] }; });
+}
+
+// Classic Levenshtein edit distance (insert/delete/substitute), iterative DP.
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = new Array(n + 1);
+  let curr = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+    }
+    const tmp = prev; prev = curr; curr = tmp;
+  }
+  return prev[n];
+}
+
+// Nearest vocabulary words to `term` by edit distance (tolerance grows with
+// length), ranked by distance then frequency. Empty for short/unknown terms.
+function suggestWords(term, vocab, limit) {
+  if (term.length < MIN_SUGGEST_LEN) return [];
+  const maxDist = term.length <= 4 ? 1 : term.length <= 8 ? 2 : 3;
+  const out = [];
+  vocab.forEach(function (entry) {
+    if (Math.abs(entry.word.length - term.length) > maxDist) return;
+    const d = levenshtein(term, entry.word);
+    if (d > 0 && d <= maxDist) out.push({ word: entry.word, dist: d, count: entry.count });
+  });
+  out.sort(function (a, b) {
+    return a.dist - b.dist || b.count - a.count || a.word.localeCompare(b.word);
+  });
+  return out.slice(0, limit || 3).map(function (e) { return e.word; });
+}
+
 // Build (and cache on appStore.searchIndex) the flat record list. Call again to
 // rebuild after the underlying data changes.
 export function buildSearchIndex(appStore) {
@@ -172,6 +227,7 @@ export function buildSearchIndex(appStore) {
   }
 
   appStore.searchIndex = records;
+  appStore.searchVocab = buildVocabulary(records);
   return records;
 }
 
@@ -261,7 +317,7 @@ function markWord(word, terms) {
 // Run a query. Returns results grouped by kind, each list ranked by score.
 // Lazily (re)builds the index if it has been invalidated.
 export function searchAll(query, appStore) {
-  const empty = { concepts: [], narratives: [], total: 0 };
+  const empty = { concepts: [], narratives: [], total: 0, suggestions: [] };
   const q = normalizeText(query);
   if (!q) return empty;
   const terms = q.split(" ").filter(Boolean);
@@ -294,5 +350,22 @@ export function searchAll(query, appStore) {
   concepts.sort(byScore);
   narratives.sort(byScore);
 
-  return { concepts: concepts, narratives: narratives, total: concepts.length + narratives.length };
+  const total = concepts.length + narratives.length;
+  let suggestions = [];
+  if (!total) {
+    const vocab = appStore.searchVocab || [];
+    const queryWords = String(query).trim().split(/\s+/);
+    terms.forEach(function (term, i) {
+      const hasHit = index.some(function (rec) { return rec.haystack.indexOf(term) !== -1; });
+      if (hasHit) return;
+      suggestWords(term, vocab, 3).forEach(function (word) {
+        const words = queryWords.slice();
+        words[i] = word;
+        suggestions.push({ word: word, query: words.join(" ") });
+      });
+    });
+    suggestions = suggestions.slice(0, 5);
+  }
+
+  return { concepts: concepts, narratives: narratives, total: total, suggestions: suggestions };
 }

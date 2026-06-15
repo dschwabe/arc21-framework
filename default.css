@@ -1282,6 +1282,26 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   margin: 0; padding: 1.4rem 1rem;
   color: var(--muted); text-align: center; font-size: 0.95rem;
 }
+.search-suggestions {
+  margin: 0; padding: 0 1rem 1.4rem;
+  text-align: center; font-size: 0.9rem; color: var(--muted);
+}
+.search-suggestion {
+  display: inline-block;
+  margin: 0.2rem 0.2rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--link-hover);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.search-suggestion:hover {
+  background: var(--accent-soft);
+  border-color: var(--line-strong);
+}
 .search-group { margin: 0.3rem 0 0.5rem; }
 .search-group-title {
   display: flex; align-items: center; gap: 0.5rem;
