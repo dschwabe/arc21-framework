@@ -54,6 +54,46 @@ def normalize_id(val):
     return str(val).strip().upper()
 
 
+# Known aliases (normalized) — mirrors the JS alias lists in js/parse/workbook.js.
+# normalizeHeader: lowercase, strip whitespace and underscores.
+_CONCEPT_KNOWN = {
+    "conceptid", "id",
+    "conceptlabel", "label", "concept",
+    "description", "descricao",
+    "sourceurl", "souceurl", "url", "posturl",
+    "imagepath", "snapshot", "screenshot",
+    "sourcetitle", "posttitle", "source",
+    "level", "camada",
+    "externalref", "externalurl",
+}
+
+_RELTYPE_KNOWN = {
+    "relationid", "relationtypeid", "id",
+    "relationtype", "relationname", "name", "label",
+    "category", "categoria",
+    "description", "descricao",
+}
+
+_RELATION_KNOWN = {
+    "conceptid", "source",
+    "relatedconcept", "relatedconceptid", "targetconceptid", "target",
+    "relationtypeid", "relationid",
+    "explanation", "explicacao",
+    "relationname", "relacao",
+}
+
+
+def extra_from(row, known_normalized):
+    """Mirror extraFrom() in js/utils.js — return non-empty unknown columns."""
+    result = {}
+    for k, v in row.items():
+        if normalize_header(k) not in known_normalized:
+            s = str(v).strip() if v is not None else ""
+            if s:
+                result[k] = s
+    return result
+
+
 _TRUTHY_RE = re.compile(r"^true|1$", re.IGNORECASE)
 
 
@@ -181,6 +221,7 @@ def parse_concepts_relations(wb):
                 "relationType": rname,
                 "category": cell(row, "category", "Category", "categoria"),
                 "description": cell(row, "description", "Description", "descrição", "descricao"),
+                "extra": extra_from(row, _RELTYPE_KNOWN),
             }
 
     relation_has_type_id = bool(relation_types_by_id)
@@ -203,6 +244,7 @@ def parse_concepts_relations(wb):
             "level": cell(row, "level", "Level"),
             "camada": cell(row, "camada", "Camada"),
             "externalRef": cell(row, "externalRef", "ExternalRef", "external_ref", "externalURL", "externalUrl"),
+            "extra": extra_from(row, _CONCEPT_KNOWN),
         }
         concept_order.append(cid)
 
@@ -248,6 +290,9 @@ def parse_concepts_relations(wb):
             "level": source["level"],
             "camada": source["camada"],
             "externalRef": source["externalRef"],
+            "extra": source["extra"],
+            "relationExtra": extra_from(row, _RELATION_KNOWN),
+            "relationTypeExtra": relation_type_info["extra"] if relation_type_info else {},
         })
 
     # Concepts with no outgoing relations get a stub row
@@ -263,6 +308,7 @@ def parse_concepts_relations(wb):
             "sourceUrl": c["sourceUrl"], "imagePath": c["imagePath"],
             "sourceTitle": c["sourceTitle"], "level": c["level"],
             "camada": c["camada"], "externalRef": c["externalRef"],
+            "extra": c["extra"], "relationExtra": {}, "relationTypeExtra": {},
         })
 
     return output_rows
