@@ -388,7 +388,7 @@ function render() {
   if (countEl) {
     const visited   = nodes.filter(function (n) { return !n.suggested; }).length;
     const suggested = nodes.length - visited;
-    let txt = visited + (visited === 1 ? " conceito" : " conceitos");
+    let txt = visited + (visited === 1 ? " " + t("eg.count.concept", "concept") : " " + t("eg.count.concepts", "concepts"));
     if (suggested) txt += " +" + suggested;
     countEl.textContent = txt;
   }
@@ -401,24 +401,24 @@ function createPanel() {
   panelEl.id = "eg-panel";
   panelEl.className = "eg-panel";
   panelEl.innerHTML = [
-    '<div class="eg-resize-nw" id="eg-resize-nw" title="Redimensionar"></div>',
+    '<div class="eg-resize-nw" id="eg-resize-nw" title="' + escapeAttr(t("eg.resize", "Resize")) + '"></div>',
     '<div class="eg-bar" id="eg-drag-bar">',
-    '  <span class="eg-bar-title">' + escapeHTML(t("eg.title", "Mapa de exploração")) + '</span>',
-    '  <span class="eg-count">0 conceitos</span>',
-    '  <button class="eg-btn" id="eg-btn-help"   type="button" title="Ajuda">?</button>',
-    '  <button class="eg-btn" id="eg-btn-expand" type="button" title="Expandir">&#x2922;</button>',
-    '  <button class="eg-btn" id="eg-btn-close"  type="button" title="Fechar">&#xD7;</button>',
+    '  <span class="eg-bar-title">' + escapeHTML(t("eg.title", "Exploration map")) + '</span>',
+    '  <span class="eg-count">0 ' + escapeHTML(t("eg.count.concepts", "concepts")) + '</span>',
+    '  <button class="eg-btn" id="eg-btn-help"   type="button" title="' + escapeAttr(t("eg.help", "Help")) + '">?</button>',
+    '  <button class="eg-btn" id="eg-btn-expand" type="button" title="' + escapeAttr(t("eg.expand", "Expand")) + '">&#x2922;</button>',
+    '  <button class="eg-btn" id="eg-btn-close"  type="button" title="' + escapeAttr(t("eg.close", "Close")) + '">&#xD7;</button>',
     '</div>',
     '<div class="eg-help-overlay" id="eg-help-overlay" hidden>',
-    '  <button class="eg-help-close" id="eg-help-close" type="button" aria-label="Fechar ajuda">&#xD7;</button>',
+    '  <button class="eg-help-close" id="eg-help-close" type="button" aria-label="' + escapeAttr(t("eg.help.close", "Close help")) + '">&#xD7;</button>',
     '  <div class="eg-help-body">',
-    '    <h3 class="eg-help-title">Entenda o Mapa de Exploração</h3>',
-    '    <p>O ponto inicial, onde você começa seu percurso, chamamos de <strong>nó</strong> — indicado por uma borda laranja. A partir dele, você pode seguir diversos caminhos nos quais sempre encontrará novos conceitos.</p>',
-    '    <p>A proposta é que você, ao "flanar" pelo site, vá descobrindo as relações entre os conceitos e crie o seu próprio caminho. As narrativas sugeridas podem inspirar sua exploração.</p>',
-    '    <p>Cada trajeto que você faz é registrado: <strong>nós com fundo escuro</strong> = já visitados; <strong>nós claros</strong> = caminhos disponíveis. Clique em qualquer nó para navegar até ele.</p>',
-    '    <p>O mapa pode ser <strong>ampliado</strong> — arraste os cantos (superior esquerdo ou inferior direito).</p>',
-    '    <p>Para <strong>reorganizar o layout</strong>, clique e mantenha o mouse pressionado sobre um nó até o cursor virar uma mãozinha, depois arraste. Clique no fundo para voltar ao modo de navegação.</p>',
-    '    <p class="eg-help-footer">Aproveite sua flânerie!</p>',
+    '    <h3 class="eg-help-title">' + escapeHTML(t("eg.help.title", "Exploration map")) + '</h3>',
+    '    <p>' + t("eg.help.p1", 'The starting point is the <strong>node</strong> you opened — shown with an orange border. From it you can follow any path to discover new concepts.') + '</p>',
+    '    <p>' + t("eg.help.p2", 'Browse freely: the suggested narratives can also inspire your exploration.') + '</p>',
+    '    <p>' + t("eg.help.p3", 'Every node you visit is recorded: <strong>dark background</strong> = visited; <strong>light background</strong> = available path. Click any node to navigate to it.') + '</p>',
+    '    <p>' + t("eg.help.p4", 'The map can be <strong>resized</strong> — drag the corners (top-left or bottom-right).') + '</p>',
+    '    <p>' + t("eg.help.p5", 'To <strong>rearrange the layout</strong>, click and hold a node until the cursor becomes a hand, then drag. Click the background to return to navigation mode.') + '</p>',
+    '    <p class="eg-help-footer">' + escapeHTML(t("eg.help.footer", "Enjoy your exploration!")) + '</p>',
     '  </div>',
     '</div>',
     '<div class="eg-body">',
@@ -426,7 +426,7 @@ function createPanel() {
     '    <g id="eg-scene"></g>',
     '  </svg>',
     '</div>',
-    '<div class="eg-resize-handle" id="eg-resize-handle" title="Redimensionar"></div>',
+    '<div class="eg-resize-handle" id="eg-resize-handle" title="' + escapeAttr(t("eg.resize", "Resize")) + '"></div>',
   ].join("\n");
 
   document.body.appendChild(panelEl);
@@ -513,7 +513,7 @@ function createPanel() {
     const large = panelEl.classList.toggle("eg-large");
     // eg-large = 90vw × 90vh; default (no class) = 40% content-area width
     this.innerHTML = large ? "&#x2921;" : "&#x2922;";
-    this.title     = large ? "Reduzir"  : "Expandir";
+    this.title     = large ? t("eg.contract", "Contract") : t("eg.expand", "Expand");
     // Clear any inline size set by drag-resize so CSS class takes over
     panelEl.style.width  = "";
     panelEl.style.height = "";
