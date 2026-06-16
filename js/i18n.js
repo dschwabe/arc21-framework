@@ -62,6 +62,11 @@ export function initLocale() {
 /** Return the active locale code. */
 export function getLocale() { return _locale; }
 
+/** True if the user has explicitly chosen a locale (stored in localStorage). */
+export function hasExplicitLocale() {
+  try { return localStorage.getItem(LOCALE_SK) !== null; } catch (e) { return false; }
+}
+
 /**
  * Switch locale. Returns true if the locale actually changed.
  * Caller is responsible for re-loading data and re-rendering.

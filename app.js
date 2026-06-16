@@ -9,7 +9,7 @@ import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, l
 import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=11";
 import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=11";
 import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=11";
-import { initLocale, getLocale, setLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=11";
+import { initLocale, getLocale, setLocale, hasExplicitLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=11";
 import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=11";
 import { buildSearchIndex, searchAll } from "./js/search.js?v=11";
 
@@ -2402,13 +2402,16 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=11";
     installNarrativeOverlay();
     installGlobalHandlers();
     installChangeSourceButton();
+    window.addEventListener("hashchange", router);
     loadSkinIndex().then(function (index) {
       _populateSkinSelects(index);
       registerLocales(index && index.locales);
+      if (index && index.defaultLocale && !hasExplicitLocale()) {
+        setLocale(index.defaultLocale);
+      }
       installLocaleSelect();
-    });
-    window.addEventListener("hashchange", router);
-    Promise.all([loadUiStrings(getLocale()), tryAutoloadDefaultData()]).then(function () {
+      return Promise.all([loadUiStrings(getLocale()), tryAutoloadDefaultData()]);
+    }).then(function () {
       applyI18n(document);
       return router();
     }).then(function () {
