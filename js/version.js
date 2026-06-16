@@ -14,4 +14,4 @@
  * Runtime-constructed paths (js/skin/loader.js) import ARC21_VERSION
  * directly and don't need step 2.
  */
-export const ARC21_VERSION = 11;
+export const ARC21_VERSION = 12;
