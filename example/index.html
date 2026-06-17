@@ -143,52 +143,52 @@
               <button id="heroChangeSourceBtn" class="nav-button open-change-source" type="button" data-i18n="hero.changeSource">Change data source</button>
             </div>
 
-            <details class="loader-card hero-loader" id="heroLoaderCard">
-              <summary>Carregar manualmente um arquivo CSV ou XLSX</summary>
+            <details class=”loader-card hero-loader” id=”heroLoaderCard”>
+              <summary data-i18n=”loader.summary”>Manually load a CSV or XLSX file</summary>
 
-              <label class="field">
-                <span>Caminho relativo do arquivo XLSX ou CSV, quando servido por HTTP local</span>
-                <input id="csvPathInput" type="text" value="data/conceptual_graph.xlsx" />
+              <label class=”field”>
+                <span data-i18n=”loader.path.label”>Relative path of XLSX or CSV file (for local HTTP serving)</span>
+                <input id=”csvPathInput” type=”text” value=”data/conceptual_graph.xlsx” />
               </label>
-              <button id="loadCsvPathBtn" class="primary" type="button">Carregar por caminho</button>
+              <button id=”loadCsvPathBtn” class=”primary” type=”button” data-i18n=”loader.path.btn”>Load by path</button>
 
-              <div class="divider"><span>ou</span></div>
+              <div class=”divider”><span data-i18n=”loader.divider.or”>or</span></div>
 
-              <div class="file-loader">
-                <p class="field-label">Selecionar arquivo XLSX ou CSV local</p>
-                <button id="browseCsvBtn" class="primary" type="button">Selecionar arquivo local</button>
-                <input id="csvFileInput" class="visually-hidden-file" type="file" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" />
-                <p id="selectedCsvFile" class="file-name">Arquivo padrão esperado: <code>data/conceptual_graph.xlsx</code>.</p>
-                <p class="file-note">Por segurança, navegadores não permitem preencher automaticamente o valor de um campo de arquivo local.</p>
+              <div class=”file-loader”>
+                <p class=”field-label” data-i18n=”loader.file.label”>Select local XLSX or CSV file</p>
+                <button id=”browseCsvBtn” class=”primary” type=”button” data-i18n=”loader.file.btn”>Select local file</button>
+                <input id=”csvFileInput” class=”visually-hidden-file” type=”file” accept=”.xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12” />
+                <p id=”selectedCsvFile” class=”file-name”>Default expected file: <code>data/conceptual_graph.xlsx</code>.</p>
+                <p class=”file-note” data-i18n=”loader.file.note”>For security, browsers do not allow auto-filling a local file input.</p>
               </div>
 
-              <div class="divider"><span>histórico</span></div>
+              <div class=”divider”><span data-i18n=”loader.divider.history”>history</span></div>
 
-              <label class="file-field">
-                <span>Selecionar arquivo JSON de histórico salvo</span>
-                <input id="historyFileInput" type="file" accept=".json,application/json" />
+              <label class=”file-field”>
+                <span data-i18n=”loader.history.label”>Select a saved history JSON file</span>
+                <input id=”historyFileInput” type=”file” accept=”.json,application/json” />
               </label>
 
-              <details class="note">
-                <summary>Observação sobre execução local</summary>
+              <details class=”note”>
+                <summary data-i18n=”loader.note.summary”>Note on local execution</summary>
                 <p>
-                  Alguns navegadores bloqueiam <code>fetch()</code> de arquivos locais abertos com
-                  <code>file://</code>. Para carregar por caminho relativo, execute
-                  <code>python3 -m http.server</code> nesta pasta e abra
-                  <code>http://localhost:8000</code>. A opção “Selecionar arquivo local” funciona
-                  diretamente no navegador.
+                  Some browsers block <code>fetch()</code> for local files opened with
+                  <code>file://</code>. To load by relative path, run
+                  <code>python3 -m http.server</code> in this folder and open
+                  <code>http://localhost:8000</code>. The “Select local file” option works
+                  directly in the browser.
                 </p>
               </details>
             </details>
 
-            <div id="dataStatus" class="status" aria-live="polite"></div>
+            <div id=”dataStatus” class=”status” aria-live=”polite”></div>
           </div>
 
-          <figure class="hero-diagram-frame" aria-label="Diagrama de alto nível do grafo conceitual">
-            <div id="heroDiagram" class="hero-diagram" role="img" aria-label="Grafo radial: Infância algorítmica e seus aspectos">
-              <p class="hero-diagram-empty">Carregue o grafo para ver o diagrama de alto nível.</p>
+          <figure class=”hero-diagram-frame” aria-label=”High-level diagram of the concept graph”>
+            <div id=”heroDiagram” class=”hero-diagram” role=”img” aria-label=”Radial concept graph”>
+              <p class=”hero-diagram-empty” data-i18n=”hero.diagram.empty”>Load the graph to see the high-level diagram.</p>
             </div>
-            <figcaption>Infância algorítmica e seus 12 aspectos — gerado a partir do grafo carregado</figcaption>
+            <figcaption>Concept graph — generated from the loaded data</figcaption>
           </figure>
         </div>
       </div>

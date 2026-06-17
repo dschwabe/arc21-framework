@@ -45,56 +45,56 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
 
   const DEFAULT_HELP_CONFIG = {
     "instructions": {
-      "title": "Como navegar neste site",
-      "intro": "Este site apresenta um grafo conceitual navegável. Cada conceito tem uma página própria, links para conceitos relacionados, uma imagem ilustrativa quando disponível e um histórico de navegação.",
+      "title": t('help.title', 'How to navigate this site'),
+      "intro": t('help.intro', 'This site presents a navigable concept graph. Each concept has its own page, links to related concepts, an illustrative image when available, and a navigation history.'),
       "sections": [
         {
-          "heading": "Carregar dados",
+          "heading": t('help.section.load.heading', 'Load data'),
           "items": [
-            "Na página inicial, selecione uma planilha .xlsx no formato Concepts/Relations ou um CSV compatível.",
-            "Ao abrir o site como arquivo local, prefira o botão de seleção de arquivo em vez de carregar por caminho."
+            t('help.section.load.item1', 'On the home page, select a .xlsx spreadsheet in Concepts/Relations format or a compatible CSV.'),
+            t('help.section.load.item2', 'When opening the site as a local file, prefer the file picker button over loading by path.')
           ]
         },
         {
-          "heading": "Navegar pelo grafo",
+          "heading": t('help.section.nav.heading', 'Navigate the graph'),
           "items": [
-            "Clique nos links dentro da descrição ou nos conceitos relacionados para avançar pelo grafo.",
-            "Use o índice lateral para saltar diretamente para qualquer conceito.",
-            "A trilha no topo mostra o caminho calculado a partir de Infância algorítmica até o conceito atual."
+            t('help.section.nav.item1', 'Click links within the description or related concepts to move through the graph.'),
+            t('help.section.nav.item2', 'Use the side index to jump directly to any concept.'),
+            t('help.section.nav.item3', 'The trail at the top shows the computed path from the root concept to the current concept.')
           ]
         },
         {
-          "heading": "Histórico e imagens",
+          "heading": t('help.section.history.heading', 'History and images'),
           "items": [
-            "O botão Histórico mostra os conceitos visitados e permite salvar esse percurso.",
-            "As ferramentas de imagem ficam recolhidas e podem ser abertas somente quando você quiser atualizar a fonte ou a imagem do post."
+            t('help.section.history.item1', 'The History button shows the visited concepts and allows saving that journey.'),
+            t('help.section.history.item2', 'Image tools are collapsed and can be opened only when you want to update the post source or image.')
           ]
         }
       ]
     },
     "tooltips": {
-      ".brand-logo": "Identidade visual ARQ21 Teia Ciborgue.",
-      ".nav-link": "Abrir a página inicial.",
-      "#backBtn": "Voltar ao conceito visitado anteriormente ou à página anterior do navegador.",
-      "#historyBtn": "Abrir o histórico dos conceitos visitados nesta sessão.",
-      "#helpBtn": "Mostrar instruções de navegação e uso do site.",
-      "#loadCsvPathBtn": "Carregar o arquivo informado no campo de caminho relativo. Funciona melhor quando o site é servido por HTTP local.",
-      "#browseCsvBtn": "Selecionar manualmente uma planilha XLSX ou arquivo CSV no seu computador.",
-      "#csvFileInput": "Arquivo local com os conceitos e relações do grafo.",
-      "#csvPathInput": "Caminho relativo do arquivo de dados quando o site é servido localmente.",
-      "#startLink": "Iniciar a navegação pelo conceito raiz do grafo.",
-      "#historyFileInput": "Carregar um arquivo JSON de histórico salvo anteriormente.",
-      "#clearHistoryBtn": "Apagar o histórico de navegação salvo no navegador.",
-      "#saveHistoryBtn": "Salvar o histórico de conceitos visitados como arquivo JSON.",
-      "#sourceUrl": "Abrir a URL pública usada como fonte da imagem do conceito.",
-      "#snapshotToolsBox > summary": "Abrir ferramentas opcionais para atualizar a URL do post ou gerar uma prévia visual.",
-      "#postUrlInput": "Informe aqui a URL pública do post relacionado ao conceito.",
-      "#snapshotServiceInput": "Template do serviço externo usado para gerar uma imagem de snapshot.",
-      "#generateSnapshotBtn": "Gerar uma prévia visual da URL usando o serviço configurado.",
-      "#savePostUrlBtn": "Salvar a URL informada no grafo carregado no navegador.",
-      "#exportCsvBtn": "Exportar o grafo atualizado como CSV.",
-      "#manualSearchLink": "Abrir uma busca na web por posts públicos relacionados ao conceito."
-}
+      ".brand-logo": t('tooltip.brandLogo', 'Site logo.'),
+      ".nav-link": t('tooltip.navLink', 'Open the home page.'),
+      "#backBtn": t('tooltip.backBtn', 'Go back to the previously visited concept or the previous browser page.'),
+      "#historyBtn": t('tooltip.historyBtn', 'Open the history of concepts visited in this session.'),
+      "#helpBtn": t('tooltip.helpBtn', 'Show navigation and site usage instructions.'),
+      "#loadCsvPathBtn": t('tooltip.loadCsvPathBtn', 'Load the file specified in the relative path field. Works best when the site is served via local HTTP.'),
+      "#browseCsvBtn": t('tooltip.browseCsvBtn', 'Manually select an XLSX spreadsheet or CSV file from your computer.'),
+      "#csvFileInput": t('tooltip.csvFileInput', 'Local file with the graph concepts and relations.'),
+      "#csvPathInput": t('tooltip.csvPathInput', 'Relative path of the data file when the site is served locally.'),
+      "#startLink": t('tooltip.startLink', 'Start navigating from the root concept of the graph.'),
+      "#historyFileInput": t('tooltip.historyFileInput', 'Load a previously saved history JSON file.'),
+      "#clearHistoryBtn": t('tooltip.clearHistoryBtn', 'Clear the browsing history saved in the browser.'),
+      "#saveHistoryBtn": t('tooltip.saveHistoryBtn', 'Save the visited concept history as a JSON file.'),
+      "#sourceUrl": t('tooltip.sourceUrl', 'Open the public URL used as the source for the concept image.'),
+      "#snapshotToolsBox > summary": t('tooltip.snapshotToolsBox', 'Open optional tools to update the post URL or generate a visual preview.'),
+      "#postUrlInput": t('tooltip.postUrlInput', 'Enter the public URL of the post related to the concept.'),
+      "#snapshotServiceInput": t('tooltip.snapshotServiceInput', 'Template of the external service used to generate a snapshot image.'),
+      "#generateSnapshotBtn": t('tooltip.generateSnapshotBtn', 'Generate a visual preview of the URL using the configured service.'),
+      "#savePostUrlBtn": t('tooltip.savePostUrlBtn', 'Save the entered URL to the graph loaded in the browser.'),
+      "#exportCsvBtn": t('tooltip.exportCsvBtn', 'Export the updated graph as CSV.'),
+      "#manualSearchLink": t('tooltip.manualSearchLink', 'Open a web search for public posts related to the concept.')
+    }
   };
 
   // Initialise locale before loading any cached data so we read the right keys.
@@ -313,17 +313,18 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
         let narrativeMsg = "";
         if (narrativesPayload && narrativesPayload.order && narrativesPayload.order.length) {
           saveStoredNarratives(narrativesPayload, _ilsk.narratives);
-          narrativeMsg = " e " + narrativesPayload.order.length + " narrativa" + (narrativesPayload.order.length === 1 ? "" : "s");
+          const _nc = narrativesPayload.order.length;
+          narrativeMsg = " " + t('hero.summary.and', 'and') + " " + _nc + " " + (_nc === 1 ? t('hero.summary.narrative', 'narrative') : t('hero.summary.narratives', 'narratives'));
         } else {
           // No narratives in this import — clear any stale narratives from
           // a previous workbook so they don't reference a mismatched graph.
           saveStoredNarratives({ byId: {}, order: [], elementsById: {}, loadedAt: "" }, _ilsk.narratives);
         }
         if (appStore.graph.sourceFormat === "xlsx" || appStore.graph.sourceFormat === "xlsx-relation-types" || sourceKind === "xlsx") {
-          setStatus(dataStatus, '<strong>Dados carregados com sucesso.</strong> Arquivo: <code>' + escapeHTML(label) + '</code> &middot; ' + appStore.graph.order.length + ' conceitos' + narrativeMsg + '.', false);
+          setStatus(dataStatus, '<strong>' + t('status.loadedSuccess', 'Data loaded successfully.') + '</strong> ' + t('status.fileLabel', 'File:') + ' <code>' + escapeHTML(label) + '</code> &middot; ' + appStore.graph.order.length + ' ' + t('hero.summary.concepts', 'concepts') + narrativeMsg + '.', false);
         } else {
-          const delimiterLabel = appStore.graph.delimiter === "\t" ? "tabula\u00e7\u00e3o" : appStore.graph.delimiter === ";" ? "ponto e v\u00edrgula (;)" : "v\u00edrgula (,)";
-          setStatus(dataStatus, '<strong>Dados carregados com sucesso.</strong> CSV: <code>' + escapeHTML(label) + '</code> &middot; ' + appStore.graph.order.length + ' conceitos. Separador: ' + delimiterLabel + '.', false);
+          const delimiterLabel = appStore.graph.delimiter === "\t" ? t('status.delimiter.tab', 'tab') : appStore.graph.delimiter === ";" ? t('status.delimiter.semicolon', 'semicolon (;)') : t('status.delimiter.comma', 'comma (,)');
+          setStatus(dataStatus, '<strong>' + t('status.loadedSuccess', 'Data loaded successfully.') + '</strong> CSV: <code>' + escapeHTML(label) + '</code> &middot; ' + appStore.graph.order.length + ' ' + t('hero.summary.concepts', 'concepts') + '. ' + t('status.separator', 'Separator:') + ' ' + delimiterLabel + '.', false);
         }
         updateStartLink();
         updateLoadedState();
@@ -353,11 +354,11 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
         const path = (csvPathInput && csvPathInput.value.trim()) || "concepts.csv";
         try {
           if (isSpreadsheetName(path)) {
-            setStatus(dataStatus, "Carregando planilha XLSX...", false);
+            setStatus(dataStatus, t('status.loadingXlsx', 'Loading XLSX spreadsheet…'), false);
             const buffer = await loadArrayBufferFromPath(path);
             await ingestSpreadsheet(buffer, path);
           } else {
-            setStatus(dataStatus, "Carregando CSV...", false);
+            setStatus(dataStatus, t('status.loadingCsv', 'Loading CSV…'), false);
             const text = await loadCsvFromPath(path);
             await ingestCsv(text, path);
           }
@@ -370,8 +371,8 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
 
     if (browseCsvBtn && csvFileInput) {
       browseCsvBtn.addEventListener("click", function () {
-        if (selectedCsvFile) selectedCsvFile.textContent = "Aguardando seleção do arquivo concepts.xlxs ou outro arquivo compatível...";
-        setStatus(dataStatus, "Abrindo seletor de arquivo CSV ou XLSX...", false);
+        if (selectedCsvFile) selectedCsvFile.textContent = t('status.filePickerWaiting', 'Waiting for file selection…');
+        setStatus(dataStatus, t('status.filePickerOpening', 'Opening file picker…'), false);
         csvFileInput.value = "";
         csvFileInput.click();
       });
@@ -381,18 +382,18 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
       csvFileInput.addEventListener("change", async function () {
         const file = csvFileInput.files && csvFileInput.files[0];
         if (!file) {
-          if (selectedCsvFile) selectedCsvFile.innerHTML = 'Arquivo padrão esperado: <code>concepts.xlxs</code>. Nenhum arquivo foi selecionado.';
-          setStatus(dataStatus, "Nenhum arquivo foi selecionado. Clique novamente em “Selecionar arquivo local” e escolha um arquivo .xlsx, .xlxs ou .csv.", true);
+          if (selectedCsvFile) selectedCsvFile.textContent = t('status.noFileSelected', 'No file selected.');
+          setStatus(dataStatus, t('status.noFileSelectedHint', 'No file was selected. Click “Select local file” again and choose an .xlsx or .csv file.'), true);
           return;
         }
         try {
-          if (selectedCsvFile) selectedCsvFile.textContent = "Selecionado: " + file.name;
+          if (selectedCsvFile) selectedCsvFile.textContent = t('status.fileSelected', 'Selected:') + ' ' + file.name;
           if (isSpreadsheetName(file.name)) {
-            setStatus(dataStatus, "Lendo planilha XLSX local...", false);
+            setStatus(dataStatus, t('status.loadingXlsxLocal', 'Reading local XLSX spreadsheet…'), false);
             const buffer = await loadFileAsArrayBuffer(file);
             await ingestSpreadsheet(buffer, file.name);
           } else {
-            setStatus(dataStatus, "Lendo arquivo CSV local...", false);
+            setStatus(dataStatus, t('status.loadingCsvLocal', 'Reading local CSV file…'), false);
             const text = await loadFileAsText(file);
             await ingestCsv(text, file.name);
           }
@@ -409,11 +410,11 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
         if (!file) return;
         try {
           const loaded = JSON.parse(await loadFileAsText(file));
-          if (!Array.isArray(loaded)) throw new Error("O arquivo de histórico deve conter uma lista JSON.");
+          if (!Array.isArray(loaded)) throw new Error(t('status.historyFileError', 'The history file must contain a JSON list.'));
           setHistory(loaded);
-          setStatus(dataStatus, "Histórico carregado: " + loaded.length + " visitas.", false);
+          setStatus(dataStatus, t('status.historyLoaded', 'History loaded:') + ' ' + loaded.length + ' ' + t('status.historyVisits', 'visits.'), false);
         } catch (err) {
-          setStatus(dataStatus, "Erro ao carregar histórico: " + escapeHTML(err.message) + ". Selecione um arquivo JSON de histórico salvo pelo botão “Salvar histórico”.", true);
+          setStatus(dataStatus, t('status.historyLoadError', 'Error loading history:') + ' ' + escapeHTML(err.message) + '. ' + t('status.historyLoadErrorHint', 'Select a history JSON file saved by the “Save history” button.'), true);
         }
       });
     }
@@ -618,6 +619,7 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
     if (!app || !heroTemplate) return;
     app.innerHTML = "";
     app.appendChild(heroTemplate.content.cloneNode(true));
+    applyI18n(app);
     installHeroHandlers();
     loadHelpConfig().then(function () { renderHeroDiagram(); applyTooltips(app); });
   }
@@ -627,7 +629,7 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
     if (!container) return;
 
     if (!appStore.graph || !appStore.graph.bySlug || !appStore.graph.order || !appStore.graph.order.length) {
-      container.innerHTML = '<p class="hero-diagram-empty">Carregue o grafo para ver o diagrama de alto nível.</p>';
+      container.innerHTML = '<p class="hero-diagram-empty">' + t('hero.diagram.empty', 'Load the graph to see the high-level diagram.') + '</p>';
       return;
     }
 
@@ -2345,7 +2347,7 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
         router();
       } catch (err) {
         console.error(err);
-        alert("N\u00e3o foi poss\u00edvel carregar o arquivo: " + (err && err.message ? err.message : err));
+        alert(t('status.fileLoadError', 'Could not load the file:') + ' ' + (err && err.message ? err.message : err));
       }
     });
   }
@@ -2360,7 +2362,7 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
     const dataStatus = $("#dataStatus");
     if (dataStatus) {
       setStatus(dataStatus,
-        'Voc\u00ea abriu o site como arquivo local. Selecione <code>conceptual_graph.xlsx</code> para come\u00e7ar. Para evitar este passo, sirva a pasta com um servidor local, por exemplo: <code>python3 -m http.server</code>.',
+        t('status.localFilePrompt', 'You opened the site as a local file. Select <code>conceptual_graph.xlsx</code> to start. To avoid this step, serve the folder with a local server, e.g. <code>python3 -m http.server</code>.'),
         false);
     }
 
