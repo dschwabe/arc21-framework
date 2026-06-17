@@ -5,7 +5,7 @@
  * Depends only on js/utils.js.
  */
 
-import { makeSpreadsheetImportError, normalizeHeader } from "../utils.js?v=12";
+import { makeSpreadsheetImportError, normalizeHeader } from "../utils.js?v=13";
 
 // ---- ZIP / binary helpers ----
 
