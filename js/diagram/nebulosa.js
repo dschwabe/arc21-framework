@@ -4,9 +4,9 @@
  * Renders concepts whose level === 'nebulosa' as colour-coded glow nodes.
  */
 
-import { wrapText } from "../render/content.js?v=13";
-import { escapeHTML } from "../utils.js?v=13";
-import { conceptUrl } from "../graph/navigation.js?v=13";
+import { wrapText } from "../render/content.js?v=14";
+import { escapeHTML } from "../utils.js?v=14";
+import { conceptUrl } from "../graph/navigation.js?v=14";
 
 var PALETTE = ['#ecb586', '#f472b6', '#3b82f6', '#a155f0', '#14a68c', '#2dd4bf'];
 

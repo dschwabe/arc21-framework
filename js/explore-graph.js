@@ -5,9 +5,9 @@
  * Click a non-current node to expand; clicking again collapses.
  */
 
-import { conceptUrl } from "./graph/navigation.js?v=13";
-import { escapeHTML, escapeAttr, isHttpUrl } from "./utils.js?v=13";
-import { t } from "./i18n.js?v=13";
+import { conceptUrl } from "./graph/navigation.js?v=14";
+import { escapeHTML, escapeAttr, isHttpUrl } from "./utils.js?v=14";
+import { t } from "./i18n.js?v=14";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 

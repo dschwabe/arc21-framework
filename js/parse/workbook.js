@@ -8,11 +8,11 @@ import {
   unzipXlsxEntries, zipText, readSharedStrings, readWorkbookSheets,
   worksheetToMatrix, matrixToObjects,
   hasColumns, formatSheetDiagnostics, getSheetInfoByName
-} from "./xlsx.js?v=13";
+} from "./xlsx.js?v=14";
 
 import {
   get, extraFrom, normalizeConceptId, makeSpreadsheetImportError
-} from "../utils.js?v=13";
+} from "../utils.js?v=14";
 
 // Known aliases per sheet — used to identify columns that should land in .extra.
 const CONCEPT_KNOWN_ALIASES = [

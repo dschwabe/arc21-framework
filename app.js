@@ -1,17 +1,17 @@
 /* arc21-framework v2 */
-import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=13";
-import { parseCSV } from "./js/parse/csv.js?v=13";
-import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=13";
-import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=13";
-import { buildGraph, countRelations } from "./js/graph/builder.js?v=13";
-import { mergeConceptSources } from "./js/graph/merger.js?v=13";
-import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=13";
-import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=13";
-import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=13";
-import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=13";
-import { initLocale, getLocale, setLocale, hasExplicitLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=13";
-import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=13";
-import { buildSearchIndex, searchAll } from "./js/search.js?v=13";
+import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=14";
+import { parseCSV } from "./js/parse/csv.js?v=14";
+import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=14";
+import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=14";
+import { buildGraph, countRelations } from "./js/graph/builder.js?v=14";
+import { mergeConceptSources } from "./js/graph/merger.js?v=14";
+import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=14";
+import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=14";
+import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=14";
+import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=14";
+import { initLocale, getLocale, setLocale, hasExplicitLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=14";
+import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=14";
+import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
    CSV columns accepted:
@@ -242,12 +242,12 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=13";
       const first = firstConceptSlug();
       if (first) {
         startLink.href = conceptUrl(first);
-        startLink.textContent = 'Come\u00e7ar por \u201c' + appStore.graph.bySlug[first].concept + '\u201d';
+        startLink.textContent = t('hero.start.label', 'Start with \u201c') + appStore.graph.bySlug[first].concept + '\u201d';
         startLink.classList.remove("disabled");
         startLink.setAttribute("aria-disabled", "false");
       } else {
         startLink.href = "#";
-        startLink.textContent = "Carregue um CSV para come\u00e7ar";
+        startLink.textContent = t('hero.start.empty', 'Load a file to start');
         startLink.classList.add("disabled");
         startLink.setAttribute("aria-disabled", "true");
       }
@@ -275,22 +275,22 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=13";
             const label = (function(){ try { return localStorage.getItem(STORAGE_SOURCE_LABEL_KEY) || ""; } catch(e) { return ""; } })();
             const narrativeCount = (appStore.narrativeStore && appStore.narrativeStore.order) ? appStore.narrativeStore.order.length : 0;
             summary.innerHTML =
-              '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-ok">\u2713 Carregado</span>' +
+              '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-ok">' + t('hero.summary.loaded', '\u2713 Loaded') + '</span>' +
                 (label ? ' <code>' + escapeHTML(label) + '</code>' : '') +
               '</div>' +
               '<div class="dataset-summary-stats">' +
-                '<span><strong>' + appStore.graph.order.length + '</strong> conceitos</span>' +
-                '<span><strong>' + relationCount + '</strong> rela\u00e7\u00f5es</span>' +
-                (narrativeCount ? '<span><strong>' + narrativeCount + '</strong> narrativa' + (narrativeCount === 1 ? '' : 's') + '</span>' : '') +
+                '<span><strong>' + appStore.graph.order.length + '</strong> ' + t('hero.summary.concepts', 'concepts') + '</span>' +
+                '<span><strong>' + relationCount + '</strong> ' + t('hero.summary.relations', 'relations') + '</span>' +
+                (narrativeCount ? '<span><strong>' + narrativeCount + '</strong> ' + (narrativeCount === 1 ? t('hero.summary.narrative', 'narrative') : t('hero.summary.narratives', 'narratives')) + '</span>' : '') +
               '</div>';
           } else {
             summary.innerHTML =
               '<p class="dataset-summary-public">' +
-              '<strong>' + appStore.graph.order.length + '</strong> constela\u00e7\u00f5es (grupos de conceitos) e ' +
-              '<strong>' + relationCount + '</strong> rela\u00e7\u00f5es</p>';
+              '<strong>' + appStore.graph.order.length + '</strong> ' + t('hero.summary.constellations', 'concepts') + ' ' + t('hero.summary.and', 'and') + ' ' +
+              '<strong>' + relationCount + '</strong> ' + t('hero.summary.relations', 'relations') + '</p>';
           }
         } else {
-          summary.innerHTML = '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-empty">Nenhum grafo carregado</span></div>';
+          summary.innerHTML = '<div class="dataset-summary-row"><span class="dataset-pill dataset-pill-empty">' + t('hero.summary.empty', 'No graph loaded') + '</span></div>';
         }
       }
     }
@@ -2409,6 +2409,10 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=13";
     loadSkinIndex().then(function (index) {
       _populateSkinSelects(index);
       registerLocales(index && index.locales);
+      // Re-run initLocale now that site locales are registered. The initial call
+      // at boot may have rejected a stored site locale (e.g. "en") because
+      // SUPPORTED_LOCALES was not yet populated with site-declared entries.
+      initLocale();
       if (index && index.defaultLocale && !hasExplicitLocale()) {
         setLocale(index.defaultLocale);
       }
