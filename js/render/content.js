@@ -4,8 +4,8 @@
  * Depends on js/utils.js and js/graph/navigation.js.
  */
 
-import { escapeHTML } from "../utils.js?v=14";
-import { resolveWikiTarget, conceptUrl } from "../graph/navigation.js?v=14";
+import { escapeHTML } from "../utils.js?v=16";
+import { resolveWikiTarget, conceptUrl } from "../graph/navigation.js?v=16";
 
 // ================================================================
 //  Panel parsing (shared by linear and scrollytelling skins)

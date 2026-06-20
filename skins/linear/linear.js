@@ -14,9 +14,9 @@
  *   getNarrative(id)
  */
 
-import { escapeHTML } from "../../js/utils.js?v=10";
-import { linkifyNarrativeText, linkifyNarrativeInline, renderElementContentLinear, toRoman } from "../../js/render/content.js?v=10";
-import { narrativeElementUrl, narrativeUrl, getNarrativeElement } from "../../js/graph/navigation.js?v=10";
+import { escapeHTML } from "../../js/utils.js?v=16";
+import { linkifyNarrativeText, linkifyNarrativeInline, renderElementContentLinear, toRoman } from "../../js/render/content.js?v=16";
+import { narrativeElementUrl, narrativeUrl, getNarrativeElement } from "../../js/graph/navigation.js?v=16";
 
 export function createLinearSkin(ctx) {
   function renderStart(narrativeID) {

@@ -5,9 +5,9 @@
  * Click a non-current node to expand; clicking again collapses.
  */
 
-import { conceptUrl } from "./graph/navigation.js?v=14";
-import { escapeHTML, escapeAttr, isHttpUrl } from "./utils.js?v=14";
-import { t } from "./i18n.js?v=14";
+import { conceptUrl } from "./graph/navigation.js?v=16";
+import { escapeHTML, escapeAttr, isHttpUrl } from "./utils.js?v=16";
+import { t } from "./i18n.js?v=16";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -512,6 +512,12 @@ function createPanel() {
   document.getElementById("eg-btn-expand").addEventListener("click", function () {
     const large = panelEl.classList.toggle("eg-large");
     // eg-large = 90vw × 90vh; default (no class) = 40% content-area width
+    // If expanding from minimized state, remove eg-minimized so its
+    // `height: auto !important` no longer overrides eg-large's height: 90vh.
+    if (large && _egMode === "minimized") {
+      _egMode = "normal";
+      panelEl.classList.remove("eg-minimized");
+    }
     this.innerHTML = large ? "&#x2921;" : "&#x2922;";
     this.title     = large ? t("eg.contract", "Contract") : t("eg.expand", "Expand");
     // Clear any inline size set by drag-resize so CSS class takes over

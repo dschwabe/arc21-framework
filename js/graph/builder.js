@@ -6,7 +6,7 @@
  * Depends on js/utils.js.
  */
 
-import { slugify, normalizeConceptId, get, extraFrom, makeCsvImportError } from "../utils.js?v=14";
+import { slugify, normalizeConceptId, get, extraFrom, makeCsvImportError } from "../utils.js?v=16";
 
 // All column aliases consumed by this module — used to compute .extra for flat
 // CSV rows (XLSX rows arrive with .extra already set by js/parse/workbook.js).

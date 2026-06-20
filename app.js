@@ -1,17 +1,17 @@
 /* arc21-framework v2 */
-import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=14";
-import { parseCSV } from "./js/parse/csv.js?v=14";
-import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=14";
-import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=14";
-import { buildGraph, countRelations } from "./js/graph/builder.js?v=14";
-import { mergeConceptSources } from "./js/graph/merger.js?v=14";
-import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=14";
-import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=14";
-import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=14";
-import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=14";
-import { initLocale, getLocale, setLocale, hasExplicitLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=14";
-import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=14";
-import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
+import { slugify, escapeHTML, escapeAttr, isHttpUrl, csvEscape, graphToCsv, downloadTextFile, normalizeHeader, get, makeCsvImportError, makeSpreadsheetImportError, isSpreadsheetName, normalizeConceptId } from "./js/utils.js?v=16";
+import { parseCSV } from "./js/parse/csv.js?v=16";
+import { unzipXlsxEntries, zipText, parseXml, xmlLocalName, attributeByLocalName, childElementsByLocalName, firstChildByLocalName, allDescendantsByLocalName, columnIndexFromCellRef, readSharedStrings, normalizeXlsxTargetPath, readWorkbookSheets, readCellValue, worksheetToMatrix, matrixToObjects, sheetColumns, hasColumns, formatSheetDiagnostics, getSheetInfoByName, getSheetRowsByName } from "./js/parse/xlsx.js?v=16";
+import { parseSpreadsheetWorkbook, parseCombinedWorkbook, parseNarrativesWorkbook } from "./js/parse/workbook.js?v=16";
+import { buildGraph, countRelations } from "./js/graph/builder.js?v=16";
+import { mergeConceptSources } from "./js/graph/merger.js?v=16";
+import { appStore, SK, saveStoredGraph, loadStoredGraph, saveStoredNarratives, loadStoredNarratives, hasNarratives, saveStoredMedia, loadStoredMedia, mediaKey, getMediaFor, mediaFilePath, saveStoredTemplates, loadStoredTemplates, getTemplate, saveStoredNarrativeSkins, loadStoredNarrativeSkins, getNarrativeSkins, getDefaultNarrativeSkin, resolveNarrativeSkin, isScrollyTemplate, loadStoredConceptSkins, saveStoredConceptSkins, getConceptSkins, getDefaultConceptSkin, resolveConceptSkin, loadStoredConceptTexts, saveStoredConceptTexts, getConceptTexts, getDefaultConceptText, loadStoredSkinData, saveStoredSkinData } from "./js/store.js?v=16";
+import { loadSkinIndex, getSkinMeta, activateSkin, ensureSkinCSS, getSkinInstance, loadSkinAssets } from "./js/skin/loader.js?v=16";
+import { conceptUrl, resolveConceptSlug, narrativeUrl, narrativeElementUrl, getNarrative, firstConceptSlug, canonicalRootSlug, findPathFromRoot, getHistory, setHistory, addToHistory, setPreviousConcept, getPreviousConcept } from "./js/graph/navigation.js?v=16";
+import { linkifyDescription, extractShortDesc, wrapText, toRoman } from "./js/render/content.js?v=16";
+import { initLocale, getLocale, setLocale, hasExplicitLocale, SUPPORTED_LOCALES, registerLocales, graphPaths, localeSK, loadUiStrings, t, applyI18n } from "./js/i18n.js?v=16";
+import { setMode as egSetMode, visit as egVisit } from "./js/explore-graph.js?v=16";
+import { buildSearchIndex, searchAll } from "./js/search.js?v=16";
 
 /* Infância Algorítmica — local conceptual appStore.graph browser
    CSV columns accepted:
@@ -1938,6 +1938,25 @@ import { buildSearchIndex, searchAll } from "./js/search.js?v=14";
 
     if (helpBtn) {
       helpBtn.addEventListener("click", function () {
+        const helpUrl = t('help.pageUrl', '');
+        if (helpUrl && helpDialog) {
+          const title = $("#helpDialogTitle");
+          if (title) title.textContent = t('nav.help', 'Help');
+          const content = $("#helpDialogContent");
+          if (content) {
+            content.style.cssText = "display:block;margin:0;padding:0;";
+            const iframe = document.createElement("iframe");
+            iframe.src = helpUrl;
+            iframe.setAttribute("title", t('nav.help', 'Help'));
+            iframe.style.cssText = "width:100%;height:72vh;border:none;display:block;";
+            content.innerHTML = "";
+            content.appendChild(iframe);
+          }
+          helpDialog.classList.add('is-page');
+          if (typeof helpDialog.showModal === "function") helpDialog.showModal();
+          return;
+        }
+        helpDialog && helpDialog.classList.remove('is-page');
         loadHelpConfig().then(function () {
           renderHelpContent();
           applyTooltips(document);

@@ -4,7 +4,7 @@
  * Depends only on js/utils.js.
  */
 
-import { normalizeHeader, get, makeCsvImportError } from "../utils.js?v=14";
+import { normalizeHeader, get, makeCsvImportError } from "../utils.js?v=16";
 
 export function countDelimiter(line, delimiter) {
   let count = 0;

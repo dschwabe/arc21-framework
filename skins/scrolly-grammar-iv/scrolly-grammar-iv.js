@@ -18,7 +18,7 @@
  *   loadSkinAssets(scope, id) → Promise<{slotID: url}>
  */
 
-import { getNarrativeElement } from "../../js/graph/navigation.js?v=10";
+import { getNarrativeElement } from "../../js/graph/navigation.js?v=16";
 
 export function createScrollyGrammarIvSkin(ctx) {
 
