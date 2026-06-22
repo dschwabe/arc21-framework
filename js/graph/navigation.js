@@ -4,8 +4,8 @@
  * State-dependent functions read from appStore.
  */
 
-import { appStore, SK, getSiteConfig } from "../store.js?v=16";
-import { slugify, normalizeConceptId } from "../utils.js?v=16";
+import { appStore, SK, getSiteConfig } from "../store.js?v=18";
+import { slugify, normalizeConceptId } from "../utils.js?v=18";
 
 // ---- URL builders ----
 

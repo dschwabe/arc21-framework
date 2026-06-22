@@ -10,9 +10,9 @@
 // finds "Território". Each result carries an HTML snippet with the matched terms
 // wrapped in <mark>.
 
-import { conceptUrl, narrativeUrl, narrativeElementUrl, resolveWikiTarget } from "./graph/navigation.js?v=16";
-import { getConceptTexts } from "./store.js?v=16";
-import { escapeHTML } from "./utils.js?v=16";
+import { conceptUrl, narrativeUrl, narrativeElementUrl, resolveWikiTarget } from "./graph/navigation.js?v=18";
+import { getConceptTexts } from "./store.js?v=18";
+import { escapeHTML } from "./utils.js?v=18";
 
 // ── Text normalization ──────────────────────────────────────────────────────
 

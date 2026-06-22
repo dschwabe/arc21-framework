@@ -4,9 +4,9 @@
  * showing neighbours whose relationCategory === 'infraestrutura'.
  */
 
-import { wrapText } from "../render/content.js?v=16";
-import { escapeHTML } from "../utils.js?v=16";
-import { conceptUrl } from "../graph/navigation.js?v=16";
+import { wrapText } from "../render/content.js?v=18";
+import { escapeHTML } from "../utils.js?v=18";
+import { conceptUrl } from "../graph/navigation.js?v=18";
 
 export function render(container, graph, siteConfig) {
   var rootId = String((siteConfig && siteConfig["hero.root"]) || "").trim().toUpperCase();

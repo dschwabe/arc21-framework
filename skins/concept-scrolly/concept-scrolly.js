@@ -10,9 +10,9 @@
  *   dataSourceID   — narrativeID to use as panels source
  */
 
-import { slugify, escapeHTML, escapeAttr } from "../../js/utils.js?v=16";
-import { conceptUrl, resolveConceptSlug } from "../../js/graph/navigation.js?v=16";
-import { loadSkinAssets } from "../../js/skin/loader.js?v=16";
+import { slugify, escapeHTML, escapeAttr } from "../../js/utils.js?v=18";
+import { conceptUrl, resolveConceptSlug } from "../../js/graph/navigation.js?v=18";
+import { loadSkinAssets } from "../../js/skin/loader.js?v=18";
 
 export function createConceptScrollySkin(ctx) {
 

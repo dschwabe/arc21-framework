@@ -25,9 +25,9 @@
  * is used instead of the staged per-layer sequencing.
  */
 
-import { slugify }                         from "../../js/utils.js?v=16";
-import { conceptUrl, resolveConceptSlug }  from "../../js/graph/navigation.js?v=16";
-import { loadSkinAssets }                  from "../../js/skin/loader.js?v=16";
+import { slugify }                         from "../../js/utils.js?v=18";
+import { conceptUrl, resolveConceptSlug }  from "../../js/graph/navigation.js?v=18";
+import { loadSkinAssets }                  from "../../js/skin/loader.js?v=18";
 
 export function createScrollyStagedSkin(ctx) {
 

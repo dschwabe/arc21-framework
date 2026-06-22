@@ -1235,6 +1235,29 @@ input::placeholder { color: rgba(244, 239, 230, 0.42); }
   justify-content: space-between;
 }
 .help-dialog, .narrative-import-dialog { width: min(780px, calc(100vw - 2rem)); }
+
+/* Help dialog — page mode (iframe variant) */
+.help-dialog.is-page {
+  width: min(88vw, 1100px);
+}
+.help-dialog.is-page form { padding: 0; }
+.help-dialog.is-page .dialog-header {
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.help-dialog.is-page .dialog-actions {
+  padding: 0.65rem 1.2rem;
+  border-top: 1px solid var(--line);
+}
+.help-dialog.is-page .help-content { margin: 0; }
+.help-frame {
+  width: 100%;
+  height: 72vh;
+  border: none;
+  display: block;
+  background: var(--bg, #0d0d0d);
+}
+
 .history-list {
   display: grid; gap: 0.65rem;
   max-height: 50vh; overflow: auto;
